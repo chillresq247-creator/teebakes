@@ -1,0 +1,1907 @@
+import React, {
+  useState,
+  useContext,
+  createContext,
+  useReducer,
+  useEffect,
+} from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://iofvfvttmobamxclwspq.supabase.co',
+  'sb_publishable_30CyLoBwFssXKPeiPhImCg_UQlArxjL'
+);
+
+// ============================================================
+// CART CONTEXT
+// ============================================================
+const CartContext = createContext();
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'ADD': {
+      const existing = state.find(
+        (i) =>
+          i.id === action.item.id &&
+          JSON.stringify(i.options) === JSON.stringify(action.item.options)
+      );
+      if (existing)
+        return state.map((i) =>
+          i === existing ? { ...i, qty: i.qty + 1 } : i
+        );
+      return [...state, { ...action.item, qty: 1 }];
+    }
+    case 'REMOVE':
+      return state.filter((_, idx) => idx !== action.idx);
+    case 'UPDATE_QTY':
+      return state
+        .map((i, idx) => (idx === action.idx ? { ...i, qty: action.qty } : i))
+        .filter((i) => i.qty > 0);
+    case 'CLEAR':
+      return [];
+    default:
+      return state;
+  }
+}
+function CartProvider({ children }) {
+  const [cart, dispatch] = useReducer(cartReducer, []);
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  return (
+    <CartContext.Provider value={{ cart, dispatch, total, count }}>
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+// ============================================================
+// REAL MENU DATA based on photos
+// ============================================================
+const MENU = [
+  // DONUTS
+  {
+    id: 'd-sugar',
+    category: 'donut',
+    name: 'Sugar Donut Box (4)',
+    price: 3.0,
+    badge: '4 for £3',
+    description:
+      'A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.',
+    allergens: ['gluten', 'eggs', 'dairy'],
+    emoji: '🍩',
+    bg: '#2d1b69',
+    accent: '#f5c542',
+    options: {},
+  },
+  {
+    id: 'd-loaded',
+    category: 'donut',
+    name: 'Loaded Donut Box (4)',
+    price: 4.0,
+    badge: '4 for £4',
+    description:
+      'A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🍩',
+    bg: '#8B4513',
+    accent: '#f5c542',
+    options: { flavour: ['Mixed', 'Oreo', 'Kinder', 'Biscoff'] },
+  },
+  {
+    id: 'd-flavoured',
+    category: 'donut',
+    name: 'Flavoured Box (4)',
+    price: 4.0,
+    badge: '4 for £4',
+    description:
+      'A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🍩',
+    bg: '#5c3317',
+    accent: '#f5c542',
+    options: {
+      flavour: ['Apple Crumble & White Choc', 'Oreo', 'Kinder', 'Biscoff'],
+    },
+  },
+  // COOKIE PIES
+  {
+    id: 'cp-slice',
+    category: 'cookie_pie',
+    name: 'Cookie Pie Slice',
+    price: 3.0,
+    badge: 'Warm & Gooey',
+    description:
+      "A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.",
+    allergens: ['gluten', 'eggs', 'dairy'],
+    emoji: '🥧',
+    bg: '#5c3317',
+    accent: '#f5c542',
+    options: { serving: ['Cold — £3.00', 'Warm with sauce — £3.50'] },
+  },
+  {
+    id: 'cp-choc',
+    category: 'cookie_pie',
+    name: 'Triple Choc Pie Slice',
+    price: 3.0,
+    badge: null,
+    description:
+      'Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges. £3 cold, £3.50 warm with sauce.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🥧',
+    bg: '#2c1507',
+    accent: '#f5c542',
+    options: { serving: ['Cold — £3.00', 'Warm with sauce — £3.50'] },
+  },
+  {
+    id: 'cp-lotus-pie',
+    category: 'cookie_pie',
+    name: 'Biscoff Cookie Pie Slice',
+    price: 3.0,
+    badge: 'Most Popular',
+    description:
+      'Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. £3 cold, £3.50 warm with sauce.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🥧',
+    bg: '#b5722a',
+    accent: '#f5c542',
+    options: { serving: ['Cold — £3.00', 'Warm with sauce — £3.50'] },
+  },
+  {
+    id: 'cp-oreo-pie',
+    category: 'cookie_pie',
+    name: 'Oreo Cookie Pie Slice',
+    price: 3.0,
+    badge: null,
+    description:
+      'Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo. £3 cold, £3.50 warm with sauce.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🥧',
+    bg: '#1a1a1a',
+    accent: '#f5c542',
+    options: { serving: ['Cold — £3.00', 'Warm with sauce — £3.50'] },
+  },
+  {
+    id: 'cp-mm-pie',
+    category: 'cookie_pie',
+    name: 'M&M Cookie Pie Slice',
+    price: 3.0,
+    badge: null,
+    description:
+      'Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious. £3 cold, £3.50 warm with sauce.',
+    allergens: ['gluten', 'eggs', 'dairy', 'soy'],
+    emoji: '🥧',
+    bg: '#3d6b35',
+    accent: '#f5c542',
+    options: { serving: ['Cold — £3.00', 'Warm with sauce — £3.50'] },
+  },
+  {
+    id: 'cp-whole',
+    category: 'cookie_pie',
+    name: 'Whole Cookie Pie',
+    price: 25.0,
+    badge: 'Pre-Order',
+    description:
+      'Order a whole cookie pie for collection or delivery. Choose your flavour — perfect for sharing (serves 6-8). Needs 24hr notice.',
+    allergens: ['gluten', 'eggs', 'dairy'],
+    emoji: '🥧',
+    bg: '#2d1b69',
+    accent: '#f5c542',
+    options: {
+      flavour: ['Triple Chocolate', 'Biscoff', 'Oreo', 'M&M', 'Mixed/Custom'],
+    },
+  },
+  // COOKIE CUPS
+  {
+    id: 'cc-main',
+    category: 'cookie_cup',
+    name: 'Cookie Cup',
+    price: 3.0,
+    badge: 'New',
+    description:
+      'Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.',
+    allergens: ['gluten', 'eggs', 'dairy'],
+    emoji: '🍪',
+    bg: '#6b3fa0',
+    accent: '#f5c542',
+    options: {
+      topping: [
+        'Lotus & Biscoff',
+        'Oreo & Choc',
+        'M&M & Caramel',
+        'Cadbury & Caramel',
+        'Easter Eggs & Choc',
+      ],
+    },
+  },
+];
+
+function getNextDays(n) {
+  const days = [];
+  for (let i = 1; i <= n + 3; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    if (d.getDay() !== 0) days.push(d);
+    if (days.length === n) break;
+  }
+  return days;
+}
+
+const TIME_SLOTS = {
+  collection: [
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '12:00',
+    '12:30',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00',
+  ],
+  delivery: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+};
+
+// ============================================================
+// STYLES — TeeBakes branded: deep purple/navy, yellow gold, dark
+// ============================================================
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #2d1b69;
+    --purple-mid: #4a2d9e;
+    --purple-light: #6b3fa0;
+    --yellow: #f5c542;
+    --yellow-dark: #d4a017;
+    --dark: #0f0a1e;
+    --cream: #fef9ec;
+    --warm: #fff8e7;
+    --text: #0f0a1e;
+    --muted: #6b5fa0;
+    --white: #ffffff;
+    --card-bg: #1a1040;
+  }
+
+  body { background: var(--dark); color: var(--white); font-family: 'Nunito', sans-serif; }
+  .app { min-height: 100vh; }
+
+  /* NAV */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--dark);
+    border-bottom: 3px solid var(--yellow);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem; height: 64px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
+  }
+  .logo-svg-wrap {
+    width: 48px; height: 48px; flex-shrink: 0;
+    filter: drop-shadow(0 0 8px rgba(245,197,66,0.4));
+    transition: transform 0.2s;
+  }
+  .nav-logo:hover .logo-svg-wrap { transform: rotate(-5deg) scale(1.08); }
+  .logo-text-block { display: flex; flex-direction: column; gap: 1px; }
+  .logo-text {
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem; letter-spacing: 3px;
+    color: var(--yellow); line-height: 1;
+  }
+  .logo-sub {
+    font-size: 0.58rem; font-weight: 800; letter-spacing: 2.5px;
+    text-transform: uppercase; color: rgba(255,255,255,0.35); line-height: 1;
+  }
+  .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
+  .nav-btn {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 0.4rem 0.7rem;
+    border-radius: 6px; transition: all 0.2s;
+  }
+  .nav-btn:hover { color: var(--yellow); }
+  .nav-btn.active { color: var(--yellow); }
+  .cart-btn {
+    background: var(--yellow); border: none; cursor: pointer;
+    color: var(--dark); font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem; font-weight: 900;
+    padding: 0.5rem 1.2rem; border-radius: 8px;
+    display: flex; align-items: center; gap: 0.5rem;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .cart-btn:hover { background: var(--yellow-dark); transform: translateY(-1px); }
+  .cart-badge {
+    background: var(--dark); color: var(--yellow);
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 0.75rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* HERO */
+  .hero {
+    background: var(--dark);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(245,197,66,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(107,63,160,0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(45,27,105,0.4) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--yellow); color: var(--dark);
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 3px;
+    text-transform: uppercase; padding: 0.3rem 1rem; border-radius: 20px;
+    margin-bottom: 1rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1; color: var(--white);
+    position: relative; margin-bottom: 0.3rem;
+    letter-spacing: 4px;
+    text-shadow: 0 0 40px rgba(245,197,66,0.3);
+  }
+  .hero h1 span { color: var(--yellow); }
+  .hero-sub {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    color: rgba(255,255,255,0.5); letter-spacing: 6px;
+    text-transform: uppercase; position: relative;
+    margin-bottom: 1rem;
+  }
+  .hero p {
+    color: rgba(255,255,255,0.6); font-size: 0.95rem;
+    max-width: 440px; margin: 0 auto; line-height: 1.6; position: relative;
+  }
+  .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative; }
+  .hero-pill {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(245,197,66,0.3);
+    color: rgba(255,255,255,0.7); padding: 0.4rem 1rem; border-radius: 20px;
+    font-size: 0.8rem; font-weight: 700;
+  }
+
+  /* CATEGORY TABS */
+  .cat-tabs {
+    display: flex; gap: 0.5rem; padding: 1.5rem 1.5rem 0;
+    max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow-x: auto;
+  }
+  .cat-tab {
+    padding: 0.6rem 1.2rem; border-radius: 8px 8px 0 0;
+    border: none; cursor: pointer; white-space: nowrap;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800;
+    letter-spacing: 0.5px; transition: all 0.2s;
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4);
+  }
+  .cat-tab.active {
+    background: var(--yellow); color: var(--dark);
+  }
+  .cat-tab:hover:not(.active) { color: var(--yellow); }
+
+  /* PAGE */
+  .page { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+  /* MENU GRID */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.2rem;
+  }
+  .menu-card {
+    border-radius: 16px; overflow: hidden; cursor: pointer;
+    transition: all 0.25s; position: relative;
+    border: 2px solid rgba(255,255,255,0.06);
+    background: var(--card-bg);
+  }
+  .menu-card:hover { transform: translateY(-5px); border-color: var(--yellow); box-shadow: 0 16px 40px rgba(245,197,66,0.15); }
+  .card-top {
+    height: 130px; display: flex; align-items: center; justify-content: center;
+    font-size: 3.5rem; position: relative;
+  }
+  .card-badge {
+    position: absolute; top: 0.7rem; right: 0.7rem;
+    background: var(--yellow); color: var(--dark);
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.5px;
+    padding: 0.2rem 0.6rem; border-radius: 20px; text-transform: uppercase;
+  }
+  .card-body { padding: 1.1rem; }
+  .card-name {
+    font-family: 'Bangers', cursive; font-size: 1.25rem;
+    color: var(--white); letter-spacing: 1px; margin-bottom: 0.3rem;
+  }
+  .card-desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin-bottom: 0.8rem; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .card-price { font-size: 1.2rem; font-weight: 900; color: var(--yellow); }
+  .card-allergens { font-size: 0.68rem; color: rgba(255,255,255,0.3); }
+  .add-btn {
+    background: var(--yellow); color: var(--dark); border: none; cursor: pointer;
+    padding: 0.5rem 1rem; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { background: var(--yellow-dark); transform: scale(1.05); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; padding: 1rem; backdrop-filter: blur(6px);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal {
+    background: #1a1040; border-radius: 20px;
+    max-width: 460px; width: 100%;
+    border: 2px solid rgba(245,197,66,0.3);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    animation: slideUp 0.25s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-top {
+    height: 150px; display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; position: relative; border-radius: 18px 18px 0 0;
+  }
+  .modal-close {
+    position: absolute; top: 0.8rem; right: 0.8rem;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer; width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    color: white; transition: all 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.1); }
+  .modal-body { padding: 1.5rem; }
+  .modal-name {
+    font-family: 'Bangers', cursive; font-size: 1.8rem;
+    color: var(--white); letter-spacing: 2px; margin-bottom: 0.3rem;
+  }
+  .modal-price { font-size: 1.3rem; font-weight: 900; color: var(--yellow); margin-bottom: 0.8rem; }
+  .modal-desc { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 1rem; }
+  .allergen-tag {
+    display: inline-block; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.2rem 0.6rem; border-radius: 20px;
+    font-size: 0.7rem; color: rgba(255,255,255,0.4); margin: 0.2rem;
+    text-transform: capitalize;
+  }
+  .option-group { margin-top: 1rem; }
+  .option-label {
+    font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--yellow); margin-bottom: 0.5rem;
+  }
+  .option-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .option-pill {
+    padding: 0.4rem 0.9rem; border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.15); cursor: pointer;
+    font-size: 0.82rem; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.7);
+    transition: all 0.15s; font-family: 'Nunito', sans-serif; font-weight: 700;
+  }
+  .option-pill.selected { background: var(--yellow); color: var(--dark); border-color: var(--yellow); }
+  .modal-add-btn {
+    width: 100%; margin-top: 1.5rem; padding: 1rem;
+    background: var(--yellow); color: var(--dark); border: none; cursor: pointer;
+    border-radius: 12px; font-family: 'Bangers', cursive;
+    font-size: 1.3rem; letter-spacing: 2px; transition: all 0.2s;
+  }
+  .modal-add-btn:hover { background: var(--yellow-dark); transform: translateY(-1px); }
+
+  /* CART DRAWER */
+  .cart-drawer {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 370px;
+    background: #0f0a1e; z-index: 300;
+    border-left: 2px solid rgba(245,197,66,0.3);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+    animation: slideLeft 0.25s ease;
+  }
+  .drawer-header {
+    padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .drawer-title {
+    font-family: 'Bangers', cursive; font-size: 1.4rem;
+    color: var(--yellow); letter-spacing: 2px;
+  }
+  .close-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1rem; color: white;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.12); }
+  .drawer-items { flex: 1; overflow-y: auto; padding: 1rem; }
+  .cart-item {
+    display: flex; gap: 1rem; padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06); align-items: flex-start;
+  }
+  .cart-item-emoji { font-size: 2rem; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 800; font-size: 0.9rem; color: var(--white); }
+  .cart-item-opts { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+  .cart-item-price { font-weight: 900; color: var(--yellow); font-size: 0.95rem; margin-top: 0.2rem; }
+  .qty-controls { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; }
+  .qty-btn {
+    width: 26px; height: 26px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+    cursor: pointer; font-size: 1rem; color: white;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .qty-btn:hover { background: var(--yellow); color: var(--dark); border-color: var(--yellow); }
+  .qty-num { font-weight: 800; font-size: 0.9rem; min-width: 20px; text-align: center; }
+  .empty-cart { text-align: center; padding: 3rem 1rem; color: rgba(255,255,255,0.3); }
+  .empty-cart-emoji { font-size: 3rem; margin-bottom: 1rem; }
+  .drawer-footer { padding: 1.2rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .drawer-total {
+    display: flex; justify-content: space-between;
+    font-weight: 900; font-size: 1.1rem; color: var(--white); margin-bottom: 1rem;
+  }
+  .drawer-total span:last-child { color: var(--yellow); }
+  .checkout-btn {
+    width: 100%; padding: 1rem; background: var(--yellow); color: var(--dark);
+    border: none; cursor: pointer; border-radius: 10px;
+    font-family: 'Bangers', cursive; font-size: 1.2rem; letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  .checkout-btn:hover { background: var(--yellow-dark); }
+
+  /* CHECKOUT */
+  .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 680px) { .checkout-grid { grid-template-columns: 1fr; } }
+
+  .co-section {
+    background: #1a1040; border-radius: 14px; padding: 1.3rem;
+    border: 1px solid rgba(255,255,255,0.06); margin-bottom: 1.2rem;
+  }
+  .co-title {
+    font-family: 'Bangers', cursive; font-size: 1.1rem; letter-spacing: 1.5px;
+    color: var(--yellow); margin-bottom: 1rem;
+  }
+  .type-toggle { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+  .type-btn {
+    flex: 1; padding: 0.8rem; border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+    cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    color: rgba(255,255,255,0.4); transition: all 0.2s;
+  }
+  .type-btn.selected { border-color: var(--yellow); background: rgba(245,197,66,0.1); color: var(--yellow); }
+  .date-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin-bottom: 1rem; }
+  .date-btn {
+    padding: 0.5rem 0.3rem; border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+    cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 700;
+    color: rgba(255,255,255,0.4); text-align: center; transition: all 0.15s;
+  }
+  .date-btn.selected { border-color: var(--yellow); background: rgba(245,197,66,0.1); color: var(--yellow); }
+  .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  .time-btn {
+    padding: 0.45rem; border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+    cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;
+    color: rgba(255,255,255,0.4); transition: all 0.15s;
+  }
+  .time-btn.selected { border-color: var(--yellow); background: rgba(245,197,66,0.1); color: var(--yellow); }
+  .form-group { margin-bottom: 0.9rem; }
+  .form-label {
+    display: block; font-size: 0.72rem; font-weight: 800;
+    color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem;
+  }
+  .form-input {
+    width: 100%; padding: 0.65rem 1rem; border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+    font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: white;
+    transition: all 0.2s; outline: none;
+  }
+  .form-input:focus { border-color: var(--yellow); background: rgba(245,197,66,0.05); }
+  .form-input::placeholder { color: rgba(255,255,255,0.2); }
+  .payment-opts { display: flex; flex-direction: column; gap: 0.6rem; }
+  .payment-opt {
+    display: flex; align-items: center; gap: 1rem; padding: 0.9rem;
+    border: 2px solid rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; transition: all 0.15s;
+    background: rgba(255,255,255,0.02);
+  }
+  .payment-opt.selected { border-color: var(--yellow); background: rgba(245,197,66,0.07); }
+  .payment-opt-icon { font-size: 1.4rem; }
+  .payment-opt-label { font-weight: 800; font-size: 0.88rem; color: var(--white); }
+  .payment-opt-sub { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+  .summary-item {
+    display: flex; justify-content: space-between;
+    padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.85rem; color: rgba(255,255,255,0.7);
+  }
+  .summary-total {
+    display: flex; justify-content: space-between;
+    padding-top: 0.8rem; font-weight: 900; font-size: 1rem;
+  }
+  .summary-total span:last-child { color: var(--yellow); }
+  .place-btn {
+    width: 100%; margin-top: 1.3rem; padding: 1rem;
+    background: var(--yellow); color: var(--dark); border: none; cursor: pointer;
+    border-radius: 10px; font-family: 'Bangers', cursive;
+    font-size: 1.2rem; letter-spacing: 2px; transition: all 0.2s;
+  }
+  .place-btn:hover { background: var(--yellow-dark); }
+  .place-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+  /* CONFIRMATION */
+  .confirmation { max-width: 520px; margin: 3rem auto; padding: 1.5rem; text-align: center; }
+  .confirm-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease; }
+  .confirm-title {
+    font-family: 'Bangers', cursive; font-size: 2.5rem;
+    color: var(--yellow); letter-spacing: 3px; margin-bottom: 0.5rem;
+  }
+  .confirm-sub { color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; }
+  .confirm-card {
+    background: #1a1040; border-radius: 16px; padding: 1.5rem;
+    border: 1px solid rgba(245,197,66,0.2); text-align: left; margin-bottom: 1.5rem;
+  }
+  .confirm-row {
+    display: flex; justify-content: space-between;
+    padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.88rem;
+  }
+  .confirm-row:last-child { border-bottom: none; }
+  .confirm-label { color: rgba(255,255,255,0.4); font-weight: 600; }
+  .confirm-value { font-weight: 800; color: var(--white); }
+  .back-btn {
+    background: var(--yellow); color: var(--dark); border: none; cursor: pointer;
+    padding: 0.9rem 2.5rem; border-radius: 10px;
+    font-family: 'Bangers', cursive; font-size: 1.2rem; letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { background: var(--yellow-dark); }
+
+  /* ADMIN */
+  .admin-layout { display: flex; min-height: calc(100vh - 64px); }
+  .admin-sidebar {
+    width: 210px; background: #0f0a1e; padding: 1.5rem 1rem;
+    border-right: 1px solid rgba(245,197,66,0.15); flex-shrink: 0;
+  }
+  .admin-sidebar-label {
+    font-size: 0.65rem; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 1rem; padding: 0 0.5rem;
+  }
+  .admin-nav-btn {
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer;
+    padding: 0.65rem 0.8rem; border-radius: 8px; margin-bottom: 0.3rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700;
+    color: rgba(255,255,255,0.4); transition: all 0.15s;
+  }
+  .admin-nav-btn:hover { color: var(--yellow); background: rgba(245,197,66,0.06); }
+  .admin-nav-btn.active { background: var(--yellow); color: var(--dark); font-weight: 900; }
+  .admin-main { flex: 1; padding: 2rem; background: var(--dark); overflow-y: auto; }
+  .admin-page-title {
+    font-family: 'Bangers', cursive; font-size: 1.8rem;
+    color: var(--yellow); letter-spacing: 3px; margin-bottom: 1.5rem;
+  }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: #1a1040; border-radius: 12px; padding: 1.2rem;
+    border: 1px solid rgba(245,197,66,0.12);
+  }
+  .stat-label { font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; }
+  .stat-value { font-family: 'Bangers', cursive; font-size: 2.2rem; color: var(--yellow); letter-spacing: 2px; }
+  .stat-sub { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 0.2rem; }
+
+  .orders-filter { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 0.35rem 0.9rem; border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+    cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;
+    color: rgba(255,255,255,0.4); transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--yellow); color: var(--dark); border-color: var(--yellow); }
+  .orders-list { display: flex; flex-direction: column; gap: 0.9rem; }
+  .order-card {
+    background: #1a1040; border-radius: 12px; padding: 1.2rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start;
+  }
+  .order-id { font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-bottom: 0.3rem; }
+  .order-name { font-weight: 800; font-size: 0.95rem; color: var(--white); margin-bottom: 0.2rem; }
+  .order-detail { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 0.15rem; }
+  .order-item-chip {
+    display: inline-block; background: rgba(255,255,255,0.05);
+    padding: 0.15rem 0.5rem; border-radius: 4px;
+    font-size: 0.75rem; color: rgba(255,255,255,0.4); margin: 0.15rem 0.15rem 0 0;
+  }
+  .status-badge {
+    display: inline-block; padding: 0.25rem 0.7rem; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+  .status-new { background: rgba(245,197,66,0.15); color: var(--yellow); }
+  .status-confirmed { background: rgba(74,160,70,0.15); color: #4fa84b; }
+  .status-ready { background: rgba(74,120,200,0.15); color: #6ea0d4; }
+  .status-completed { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); }
+  .status-select {
+    padding: 0.35rem 0.6rem; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+    font-family: 'Nunito', sans-serif; font-size: 0.8rem; color: white;
+    cursor: pointer; margin-top: 0.4rem;
+  }
+  .order-total-badge { font-weight: 900; font-size: 1.1rem; color: var(--yellow); }
+
+  /* ADMIN MENU */
+  .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
+  .admin-menu-card {
+    background: #1a1040; border-radius: 10px; padding: 1rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex; gap: 0.8rem; align-items: flex-start;
+  }
+  .admin-card-name { font-weight: 800; font-size: 0.88rem; color: var(--white); margin-bottom: 0.2rem; }
+  .admin-card-price { font-size: 0.82rem; color: var(--yellow); font-weight: 700; }
+  .toggle-avail {
+    margin-top: 0.5rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: none;
+    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .toggle-avail.on { background: rgba(74,160,70,0.15); color: #4fa84b; }
+  .toggle-avail.off { background: rgba(220,50,50,0.15); color: #e06060; }
+
+  /* BACK BTN */
+  .back-nav-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem; font-weight: 700; padding: 0.5rem 1rem;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  }
+  .back-nav-btn:hover { color: var(--yellow); border-color: var(--yellow); }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+  @media (max-width: 500px) {
+    .cart-drawer { width: 100%; }
+    .admin-layout { flex-direction: column; }
+    .admin-sidebar { width: 100%; }
+  }
+`;
+
+// ============================================================
+// TEE BAKES LOGO SVG — recreated from branding
+// ============================================================
+let _logoId = 0;
+function TeeBakesLogo({ size = 48 }) {
+  const [uid] = useState(() => `tb${++_logoId}`);
+  const clipId = `${uid}c`,
+    yellowId = `${uid}y`,
+    mintId = `${uid}m`;
+  // Scale factor — logo viewBox is 200x200
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 200 200"
+      style={{ display: 'block', flexShrink: 0 }}
+    >
+      <defs>
+        <clipPath id={clipId}>
+          <circle cx="100" cy="105" r="88" />
+        </clipPath>
+        <radialGradient id={yellowId} cx="55%" cy="40%" r="55%">
+          <stop offset="0%" stopColor="#fff176" />
+          <stop offset="100%" stopColor="#f9c900" />
+        </radialGradient>
+        <radialGradient id={mintId} cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor="#b2dfce" />
+          <stop offset="100%" stopColor="#7ec8a8" />
+        </radialGradient>
+      </defs>
+
+      {/* ── Pink outer ring ── */}
+      <circle cx="100" cy="105" r="91" fill="#f48fb1" />
+      {/* ── Navy fill ── */}
+      <circle cx="100" cy="105" r="87" fill="#1a237e" />
+
+      {/* ── Yellow blob (top right half) ── */}
+      <ellipse
+        cx="115"
+        cy="82"
+        rx="70"
+        ry="60"
+        fill={`url(#${yellowId})`}
+        clipPath={`url(#${clipId})`}
+      />
+
+      {/* ── Mint green diagonal stripe ── */}
+      <rect
+        x="-10"
+        y="108"
+        width="230"
+        height="52"
+        fill={`url(#${mintId})`}
+        transform="rotate(-8 100 130)"
+        clipPath={`url(#${clipId})`}
+      />
+
+      {/* ── Navy banner stripe (middle) for text bg ── */}
+      <rect
+        x="-10"
+        y="118"
+        width="230"
+        height="38"
+        fill="#1a237e"
+        transform="rotate(-8 100 135)"
+        clipPath={`url(#${clipId})`}
+      />
+
+      {/* ── Pink rolling pin at bottom ── */}
+      <ellipse
+        cx="108"
+        cy="174"
+        rx="72"
+        ry="11"
+        fill="#f48fb1"
+        clipPath={`url(#${clipId})`}
+      />
+      <ellipse
+        cx="108"
+        cy="172"
+        rx="72"
+        ry="9"
+        fill="#f8bbd0"
+        clipPath={`url(#${clipId})`}
+      />
+
+      {/* ══ COOKIE STACK (left, overshooting circle edge) ══ */}
+      {/* Cookie 3 — bottom */}
+      <ellipse cx="42" cy="112" rx="28" ry="9" fill="#5d2e0c" />
+      <ellipse cx="42" cy="109" rx="28" ry="9" fill="#a0522d" />
+      <ellipse cx="42" cy="108" rx="28" ry="8.5" fill="#cd853f" />
+      <circle cx="32" cy="106" r="3" fill="#3b1a06" opacity="0.85" />
+      <circle cx="43" cy="104" r="3" fill="#3b1a06" opacity="0.85" />
+      <circle cx="54" cy="106" r="2.5" fill="#3b1a06" opacity="0.85" />
+      <circle cx="38" cy="110" r="2" fill="#3b1a06" opacity="0.6" />
+      <circle cx="50" cy="109" r="2" fill="#3b1a06" opacity="0.6" />
+
+      {/* Cookie 2 — middle */}
+      <ellipse cx="40" cy="97" rx="26" ry="8.5" fill="#5d2e0c" />
+      <ellipse cx="40" cy="94" rx="26" ry="8.5" fill="#b8621a" />
+      <ellipse cx="40" cy="93" rx="26" ry="8" fill="#d4832a" />
+      <circle cx="30" cy="91" r="2.8" fill="#3b1a06" opacity="0.85" />
+      <circle cx="41" cy="89" r="2.8" fill="#3b1a06" opacity="0.85" />
+      <circle cx="52" cy="91" r="2.5" fill="#3b1a06" opacity="0.85" />
+      <circle cx="36" cy="95" r="2" fill="#3b1a06" opacity="0.6" />
+
+      {/* Cookie 1 — top */}
+      <ellipse cx="38" cy="82" rx="24" ry="8" fill="#5d2e0c" />
+      <ellipse cx="38" cy="79" rx="24" ry="8" fill="#c97c1e" />
+      <ellipse cx="38" cy="78" rx="24" ry="7.5" fill="#e8a030" />
+      <circle cx="29" cy="76" r="2.5" fill="#3b1a06" opacity="0.85" />
+      <circle cx="39" cy="74" r="2.5" fill="#3b1a06" opacity="0.85" />
+      <circle cx="50" cy="76" r="2.2" fill="#3b1a06" opacity="0.85" />
+      <circle cx="34" cy="80" r="1.8" fill="#3b1a06" opacity="0.6" />
+      <circle cx="46" cy="79" r="1.8" fill="#3b1a06" opacity="0.6" />
+
+      {/* ══ TEXT ══ */}
+      {/* "TeeBakes" — large white script style */}
+      <text
+        x="78"
+        y="122"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize="32"
+        fontWeight="900"
+        fontStyle="italic"
+        fill="white"
+        stroke="#1a237e"
+        strokeWidth="3"
+        paintOrder="stroke"
+        textAnchor="middle"
+        letterSpacing="-0.5"
+      >
+        TeeBakes
+      </text>
+
+      {/* "Specialty Bakes" — slightly smaller */}
+      <text
+        x="108"
+        y="150"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize="22"
+        fontWeight="900"
+        fontStyle="italic"
+        fill="white"
+        stroke="#1a237e"
+        strokeWidth="2.5"
+        paintOrder="stroke"
+        textAnchor="middle"
+        letterSpacing="0"
+      >
+        Specialty Bakes
+      </text>
+
+      {/* Pink outline circle on top for crispness */}
+      <circle
+        cx="100"
+        cy="105"
+        r="88"
+        fill="none"
+        stroke="#f48fb1"
+        strokeWidth="5"
+      />
+      <circle
+        cx="100"
+        cy="105"
+        r="82"
+        fill="none"
+        stroke="#f8bbd0"
+        strokeWidth="1.5"
+        opacity="0.5"
+      />
+    </svg>
+  );
+}
+
+// ============================================================
+// COMPONENTS
+// ============================================================
+
+function MenuCard({ item, onOpen }) {
+  return (
+    <div className="menu-card" onClick={() => onOpen(item)}>
+      <div className="card-top" style={{ background: `${item.bg}cc` }}>
+        <span>{item.emoji}</span>
+        {item.badge && <span className="card-badge">{item.badge}</span>}
+      </div>
+      <div className="card-body">
+        <div className="card-name">{item.name}</div>
+        <div className="card-desc">{item.description}</div>
+        <div className="card-footer">
+          <div>
+            <div className="card-price">from £{item.price.toFixed(2)}</div>
+            <div className="card-allergens">
+              Contains: {item.allergens.join(', ')}
+            </div>
+          </div>
+          <button
+            className="add-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(item);
+            }}
+          >
+            Add +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductModal({ item, onClose, onAdd }) {
+  const [options, setOptions] = useState(() => {
+    const d = {};
+    if (item.options)
+      Object.keys(item.options).forEach((k) => (d[k] = item.options[k][0]));
+    return d;
+  });
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-top" style={{ background: `${item.bg}dd` }}>
+          <span style={{ fontSize: '4rem' }}>{item.emoji}</span>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-name">{item.name}</div>
+          <div className="modal-price">from £{item.price.toFixed(2)}</div>
+          <div className="modal-desc">{item.description}</div>
+          <div>
+            {item.allergens.map((a) => (
+              <span key={a} className="allergen-tag">
+                {a}
+              </span>
+            ))}
+          </div>
+          {item.options &&
+            Object.entries(item.options).map(([key, vals]) => (
+              <div key={key} className="option-group">
+                <div className="option-label">{key}</div>
+                <div className="option-pills">
+                  {vals.map((v) => (
+                    <button
+                      key={v}
+                      className={`option-pill ${
+                        options[key] === v ? 'selected' : ''
+                      }`}
+                      onClick={() => setOptions((o) => ({ ...o, [key]: v }))}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          <button
+            className="modal-add-btn"
+            onClick={() => {
+              onAdd(item, options);
+              onClose();
+            }}
+          >
+            ADD TO ORDER
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartDrawer({ onClose, onCheckout }) {
+  const { cart, dispatch, total, count } = useContext(CartContext);
+  return (
+    <div className="cart-drawer">
+      <div className="drawer-header">
+        <div className="drawer-title">
+          YOUR ORDER {count > 0 && `(${count})`}
+        </div>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
+      </div>
+      <div className="drawer-items">
+        {cart.length === 0 ? (
+          <div className="empty-cart">
+            <div className="empty-cart-emoji">🛒</div>
+            <div style={{ fontWeight: 700 }}>Nothing added yet!</div>
+            <div style={{ fontSize: '0.82rem', marginTop: '0.4rem' }}>
+              Browse the menu and add your faves.
+            </div>
+          </div>
+        ) : (
+          cart.map((item, idx) => (
+            <div key={idx} className="cart-item">
+              <div className="cart-item-emoji">{item.emoji}</div>
+              <div className="cart-item-info">
+                <div className="cart-item-name">{item.name}</div>
+                {item.options && (
+                  <div className="cart-item-opts">
+                    {Object.values(item.options).join(' · ')}
+                  </div>
+                )}
+                <div className="cart-item-price">
+                  £{(item.price * item.qty).toFixed(2)}
+                </div>
+                <div className="qty-controls">
+                  <button
+                    className="qty-btn"
+                    onClick={() =>
+                      dispatch({ type: 'UPDATE_QTY', idx, qty: item.qty - 1 })
+                    }
+                  >
+                    −
+                  </button>
+                  <span className="qty-num">{item.qty}</span>
+                  <button
+                    className="qty-btn"
+                    onClick={() =>
+                      dispatch({ type: 'UPDATE_QTY', idx, qty: item.qty + 1 })
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      {cart.length > 0 && (
+        <div className="drawer-footer">
+          <div className="drawer-total">
+            <span>Total</span>
+            <span>£{total.toFixed(2)}</span>
+          </div>
+          <button className="checkout-btn" onClick={onCheckout}>
+            CHECKOUT →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// PAGES
+// ============================================================
+
+function MenuPage() {
+  const { dispatch } = useContext(CartContext);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+
+  const tabs = [
+    { id: 'all', label: '🍽️ Everything' },
+    { id: 'donut', label: '🍩 Donuts' },
+    { id: 'cookie_pie', label: '🥧 Cookie Pies' },
+    { id: 'cookie_cup', label: '🍪 Cookie Cups' },
+  ];
+
+  const filtered =
+    activeTab === 'all' ? MENU : MENU.filter((i) => i.category === activeTab);
+
+  return (
+    <>
+      <div className="hero">
+        <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '1rem',
+            position: 'relative',
+          }}
+        >
+          <TeeBakesLogo size={110} />
+        </div>
+        <h1>
+          TEE<span>BAKES</span>
+        </h1>
+        <div className="hero-sub">Specialty Bakes</div>
+        <p>
+          Fresh fried donuts, loaded with your favourite toppings. Warm gooey
+          cookie pies by the slice. Pre-order for collection or delivery.
+        </p>
+        <div className="hero-pills">
+          <span className="hero-pill">🍩 Loaded Donuts</span>
+          <span className="hero-pill">🥧 Cookie Pies</span>
+          <span className="hero-pill">🍪 Cookie Cups</span>
+          <span className="hero-pill">🚗 Delivery Available</span>
+        </div>
+      </div>
+
+      <div className="cat-tabs">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            className={`cat-tab ${activeTab === t.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="page">
+        <div className="menu-grid">
+          {filtered.map((item) => (
+            <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />
+          ))}
+        </div>
+      </div>
+
+      {selectedItem && (
+        <ProductModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+          onAdd={(item, options) =>
+            dispatch({ type: 'ADD', item: { ...item, options } })
+          }
+        />
+      )}
+    </>
+  );
+}
+
+function CheckoutPage({ onBack, onConfirm }) {
+  const { cart, total } = useContext(CartContext);
+  const days = getNextDays(9);
+  const [type, setType] = useState('collection');
+  const [selDate, setSelDate] = useState(null);
+  const [selTime, setSelTime] = useState(null);
+  const [payment, setPayment] = useState('on_arrival');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
+
+  const fmtDate = (d) =>
+    d.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  const canSubmit = form.name && form.email && selDate && selTime;
+
+  function handleSubmit() {
+    const orderId =
+      'TB-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    onConfirm({
+      orderId,
+      ...form,
+      type,
+      date: fmtDate(selDate),
+      time: selTime,
+      payment,
+      items: cart,
+      total,
+    });
+  }
+
+  return (
+    <div className="page">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '1.5rem',
+        }}
+      >
+        <button className="back-nav-btn" onClick={onBack}>
+          ← Back to Menu
+        </button>
+        <h2
+          style={{
+            fontFamily: "'Bangers',cursive",
+            fontSize: '1.6rem',
+            color: 'var(--yellow)',
+            letterSpacing: '2px',
+          }}
+        >
+          CHECKOUT
+        </h2>
+      </div>
+      <div className="checkout-grid">
+        <div>
+          <div className="co-section">
+            <div className="co-title">📦 COLLECTION OR DELIVERY?</div>
+            <div className="type-toggle">
+              <button
+                className={`type-btn ${
+                  type === 'collection' ? 'selected' : ''
+                }`}
+                onClick={() => setType('collection')}
+              >
+                🏪 Collection
+              </button>
+              <button
+                className={`type-btn ${type === 'delivery' ? 'selected' : ''}`}
+                onClick={() => setType('delivery')}
+              >
+                🚗 Delivery
+              </button>
+            </div>
+            <div
+              className="co-title"
+              style={{ fontSize: '0.8rem', marginBottom: '0.6rem' }}
+            >
+              📅 PICK A DATE
+            </div>
+            <div className="date-grid">
+              {days.map((d) => (
+                <button
+                  key={d.toString()}
+                  className={`date-btn ${selDate === d ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelDate(d);
+                    setSelTime(null);
+                  }}
+                >
+                  {fmtDate(d)}
+                </button>
+              ))}
+            </div>
+            {selDate && (
+              <>
+                <div
+                  className="co-title"
+                  style={{ fontSize: '0.8rem', margin: '1rem 0 0.6rem' }}
+                >
+                  ⏰ PICK A TIME
+                </div>
+                <div className="time-grid">
+                  {TIME_SLOTS[type].map((t) => (
+                    <button
+                      key={t}
+                      className={`time-btn ${selTime === t ? 'selected' : ''}`}
+                      onClick={() => setSelTime(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="co-section">
+            <div className="co-title">👤 YOUR DETAILS</div>
+            {[
+              { k: 'name', l: 'Full Name', p: 'Your name' },
+              { k: 'email', l: 'Email', p: 'email@example.com' },
+              { k: 'phone', l: 'Phone', p: '+44 7700 000000' },
+            ].map((f) => (
+              <div key={f.k} className="form-group">
+                <label className="form-label">{f.l}</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder={f.p}
+                  value={form[f.k]}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, [f.k]: e.target.value }))
+                  }
+                />
+              </div>
+            ))}
+            {type === 'delivery' && (
+              <div className="form-group">
+                <label className="form-label">Delivery Address</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Your address"
+                  value={form.address}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, address: e.target.value }))
+                  }
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="co-section">
+            <div className="co-title">💳 PAYMENT</div>
+            <div className="payment-opts">
+              <div
+                className={`payment-opt ${
+                  payment === 'card' ? 'selected' : ''
+                }`}
+                onClick={() => setPayment('card')}
+              >
+                <div className="payment-opt-icon">💳</div>
+                <div>
+                  <div className="payment-opt-label">Pay Now (SumUp)</div>
+                  <div className="payment-opt-sub">Secure card payment</div>
+                </div>
+              </div>
+              <div
+                className={`payment-opt ${
+                  payment === 'on_arrival' ? 'selected' : ''
+                }`}
+                onClick={() => setPayment('on_arrival')}
+              >
+                <div className="payment-opt-icon">💵</div>
+                <div>
+                  <div className="payment-opt-label">
+                    Pay on Collection / Delivery
+                  </div>
+                  <div className="payment-opt-sub">
+                    Cash or card when you receive
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div
+            className="co-section"
+            style={{ position: 'sticky', top: '80px' }}
+          >
+            <div className="co-title">🧾 ORDER SUMMARY</div>
+            {cart.map((item, idx) => (
+              <div key={idx} className="summary-item">
+                <span>
+                  {item.qty}× {item.name}
+                </span>
+                <span>£{(item.price * item.qty).toFixed(2)}</span>
+              </div>
+            ))}
+            <div className="summary-total">
+              <span>Total</span>
+              <span>£{total.toFixed(2)}</span>
+            </div>
+            {selDate && selTime && (
+              <div
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.8rem',
+                  background: 'rgba(245,197,66,0.07)',
+                  borderRadius: '8px',
+                  fontSize: '0.82rem',
+                  color: 'rgba(255,255,255,0.5)',
+                  border: '1px solid rgba(245,197,66,0.2)',
+                }}
+              >
+                📅 {fmtDate(selDate)} at {selTime}
+                <br />
+                {type === 'collection' ? '🏪 Collection' : '🚗 Delivery'}
+              </div>
+            )}
+            <button
+              className="place-btn"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+            >
+              {payment === 'card' ? 'PAY & PLACE ORDER →' : 'PLACE ORDER →'}
+            </button>
+            {!canSubmit && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  fontSize: '0.75rem',
+                  color: 'rgba(255,255,255,0.3)',
+                  marginTop: '0.5rem',
+                }}
+              >
+                Fill in your details and select a date & time
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmationPage({ order, onBackToMenu }) {
+  return (
+    <div className="confirmation">
+      <div className="confirm-icon">🎉</div>
+      <div className="confirm-title">ORDER PLACED!</div>
+      <div className="confirm-sub">
+        Thanks {order.name.split(' ')[0]}! We'll get your order freshly made.
+        <br />
+        Confirmation sent to{' '}
+        <strong style={{ color: 'var(--yellow)' }}>{order.email}</strong>
+      </div>
+      <div className="confirm-card">
+        {[
+          ['Order ID', order.orderId],
+          [
+            'Type',
+            order.type === 'collection' ? '🏪 Collection' : '🚗 Delivery',
+          ],
+          ['Date', order.date],
+          ['Time', order.time],
+          [
+            'Payment',
+            order.payment === 'card' ? '💳 Paid by card' : '💵 Pay on arrival',
+          ],
+          ['Total', `£${order.total.toFixed(2)}`],
+        ].map(([l, v]) => (
+          <div key={l} className="confirm-row">
+            <span className="confirm-label">{l}</span>
+            <span className="confirm-value">{v}</span>
+          </div>
+        ))}
+      </div>
+      <button className="back-btn" onClick={onBackToMenu}>
+        ORDER MORE 🍩
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+const MOCK_ORDERS = [
+  {
+    id: 'TB-A1B2C3',
+    name: 'Aisha Rahman',
+    email: 'aisha@email.com',
+    type: 'collection',
+    date: 'Mon 9 Jun',
+    time: '11:00',
+    total: 12.0,
+    status: 'new',
+    payment: 'on_arrival',
+    items: [
+      { name: 'Loaded Box (4)', qty: 1 },
+      { name: 'Cookie Pie Slice', qty: 2 },
+    ],
+  },
+  {
+    id: 'TB-D4E5F6',
+    name: 'Jake Thomas',
+    email: 'jake@email.com',
+    type: 'delivery',
+    date: 'Mon 9 Jun',
+    time: '14:00',
+    total: 28.0,
+    status: 'confirmed',
+    payment: 'card',
+    items: [
+      { name: 'Whole Cookie Pie (Biscoff)', qty: 1 },
+      { name: 'Sugar Donuts (4)', qty: 2 },
+    ],
+  },
+  {
+    id: 'TB-G7H8I9',
+    name: 'Priya Patel',
+    email: 'priya@email.com',
+    type: 'collection',
+    date: 'Tue 10 Jun',
+    time: '10:30',
+    total: 15.5,
+    status: 'ready',
+    payment: 'card',
+    items: [
+      { name: 'Oreo Dream', qty: 2 },
+      { name: 'Biscoff Cookie Pie Slice', qty: 3 },
+    ],
+  },
+  {
+    id: 'TB-J1K2L3',
+    name: 'Marcus Webb',
+    email: 'marcus@email.com',
+    type: 'delivery',
+    date: 'Tue 10 Jun',
+    time: '13:00',
+    total: 9.0,
+    status: 'completed',
+    payment: 'on_arrival',
+    items: [
+      { name: 'M&M Madness', qty: 1 },
+      { name: 'Cookie Cup', qty: 2 },
+    ],
+  },
+];
+
+function AdminDashboard() {
+  const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  async function loadOrders() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (data) setOrders(data);
+    if (error) console.error(error);
+    setLoading(false);
+  }
+
+  async function updateStatus(id, status) {
+    await supabase.from('orders').update({ order_status: status }).eq('id', id);
+    setOrders((os) =>
+      os.map((o) => (o.id === id ? { ...o, order_status: status } : o))
+    );
+  }
+
+  const filtered =
+    filter === 'all' ? orders : orders.filter((o) => o.order_status === filter);
+
+  return (
+    <div>
+      <div className="stats-grid">
+        {[
+          {
+            label: 'Total Orders',
+            value: orders.length,
+            sub: `${orders.filter((o) => o.order_status === 'new').length} new`,
+          },
+          {
+            label: 'Revenue',
+            value: `£${orders
+              .reduce((s, o) => s + (o.total || 0), 0)
+              .toFixed(2)}`,
+            sub: 'all time',
+          },
+          {
+            label: 'Collections',
+            value: orders.filter((o) => o.type === 'collection').length,
+            sub: 'total',
+          },
+          {
+            label: 'Deliveries',
+            value: orders.filter((o) => o.type === 'delivery').length,
+            sub: 'total',
+          },
+        ].map((s) => (
+          <div key={s.label} className="stat-card">
+            <div className="stat-label">{s.label}</div>
+            <div className="stat-value">{s.value}</div>
+            <div className="stat-sub">{s.sub}</div>
+          </div>
+        ))}
+      </div>
+      <div className="orders-filter">
+        {['all', 'new', 'confirmed', 'ready', 'completed'].map((f) => (
+          <button
+            key={f}
+            className={`filter-btn ${filter === f ? 'active' : ''}`}
+            onClick={() => setFilter(f)}
+          >
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <div
+          style={{
+            color: 'rgba(255,255,255,0.4)',
+            padding: '2rem',
+            textAlign: 'center',
+          }}
+        >
+          Loading orders...
+        </div>
+      ) : filtered.length === 0 ? (
+        <div
+          style={{
+            color: 'rgba(255,255,255,0.4)',
+            padding: '2rem',
+            textAlign: 'center',
+          }}
+        >
+          No orders yet 👀
+        </div>
+      ) : (
+        <div className="orders-list">
+          {filtered.map((o) => (
+            <div key={o.id} className="order-card">
+              <div>
+                <div className="order-id">{o.id}</div>
+                <div className="order-name">{o.customer_name}</div>
+                <div className="order-detail">📧 {o.customer_email}</div>
+                <div className="order-detail">
+                  {o.type === 'collection' ? '🏪 Collection' : '🚗 Delivery'} ·{' '}
+                  {o.date} at {o.time}
+                </div>
+                <div className="order-detail">
+                  {o.payment_method === 'card'
+                    ? '💳 Paid by card'
+                    : '💵 Pay on arrival'}
+                </div>
+                <div style={{ marginTop: '0.4rem' }}>
+                  {o.items &&
+                    o.items.map((item, i) => (
+                      <span key={i} className="order-item-chip">
+                        {item.qty}× {item.name}
+                      </span>
+                    ))}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="order-total-badge">
+                  £{(o.total || 0).toFixed(2)}
+                </div>
+                <div>
+                  <span className={`status-badge status-${o.order_status}`}>
+                    {o.order_status}
+                  </span>
+                </div>
+                <select
+                  className="status-select"
+                  value={o.order_status}
+                  onChange={(e) => updateStatus(o.id, e.target.value)}
+                >
+                  <option value="new">New</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="ready">Ready</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminMenu() {
+  const [items, setItems] = useState(
+    MENU.map((i) => ({ ...i, available: true }))
+  );
+  const toggle = (id) =>
+    setItems((is) =>
+      is.map((i) => (i.id === id ? { ...i, available: !i.available } : i))
+    );
+  const cats = [
+    { id: 'donut', label: '🍩 Donuts' },
+    { id: 'cookie_pie', label: '🥧 Cookie Pies' },
+    { id: 'cookie_cup', label: '🍪 Cookie Cups' },
+  ];
+  return (
+    <div>
+      {cats.map((cat) => (
+        <div key={cat.id} style={{ marginBottom: '2rem' }}>
+          <div
+            style={{
+              fontFamily: "'Bangers',cursive",
+              fontSize: '1.1rem',
+              color: 'var(--yellow)',
+              letterSpacing: '2px',
+              marginBottom: '0.8rem',
+            }}
+          >
+            {cat.label}
+          </div>
+          <div className="admin-menu-grid">
+            {items
+              .filter((i) => i.category === cat.id)
+              .map((item) => (
+                <div key={item.id} className="admin-menu-card">
+                  <span style={{ fontSize: '1.8rem' }}>{item.emoji}</span>
+                  <div>
+                    <div className="admin-card-name">{item.name}</div>
+                    <div className="admin-card-price">
+                      from £{item.price.toFixed(2)}
+                    </div>
+                    <button
+                      className={`toggle-avail ${
+                        item.available ? 'on' : 'off'
+                      }`}
+                      onClick={() => toggle(item.id)}
+                    >
+                      {item.available ? '● Available' : '✗ Hidden'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AdminPage() {
+  const [tab, setTab] = useState('orders');
+  return (
+    <div className="admin-layout">
+      <div className="admin-sidebar">
+        <div className="admin-sidebar-label">Admin Panel</div>
+        {[
+          { id: 'orders', label: '📋 Orders' },
+          { id: 'menu', label: '🍩 Menu' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            className={`admin-nav-btn ${tab === t.id ? 'active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="admin-main">
+        <div className="admin-page-title">
+          {tab === 'orders' ? 'ORDERS' : 'MENU MANAGER'}
+        </div>
+        {tab === 'orders' && <AdminDashboard />}
+        {tab === 'menu' && <AdminMenu />}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ROOT
+// ============================================================
+function App() {
+  const [page, setPage] = useState('menu');
+  const [cartOpen, setCartOpen] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const { count, dispatch } = useContext(CartContext);
+
+  async function handleConfirm(order) {
+    // Save order to Supabase
+    const { error } = await supabase.from('orders').insert({
+      id: order.orderId,
+      customer_name: order.name,
+      customer_email: order.email,
+      customer_phone: order.phone,
+      items: order.items,
+      total: order.total,
+      type: order.type,
+      delivery_address: order.address || null,
+      date: order.date,
+      time: order.time,
+      payment_method: order.payment,
+      order_status: 'new',
+    });
+    if (error) console.error('Order save error:', error);
+    setConfirmedOrder(order);
+    dispatch({ type: 'CLEAR' });
+    setPage('confirmation');
+    setCartOpen(false);
+  }
+
+  return (
+    <div className="app">
+      <style>{STYLES}</style>
+      <nav className="nav">
+        <div className="nav-logo" onClick={() => setPage('menu')}>
+          <TeeBakesLogo size={48} />
+          <div className="logo-text-block">
+            <div className="logo-text">TeeBakes</div>
+            <div className="logo-sub">Specialty Bakes</div>
+          </div>
+        </div>
+        <div className="nav-actions">
+          <button
+            className={`nav-btn ${page === 'menu' ? 'active' : ''}`}
+            onClick={() => setPage('menu')}
+          >
+            Menu
+          </button>
+          <button
+            className={`nav-btn ${page === 'admin' ? 'active' : ''}`}
+            onClick={() => setPage('admin')}
+          >
+            Admin
+          </button>
+          {page !== 'admin' && (
+            <button className="cart-btn" onClick={() => setCartOpen(true)}>
+              🛒 Cart {count > 0 && <span className="cart-badge">{count}</span>}
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {page === 'menu' && <MenuPage />}
+      {page === 'checkout' && (
+        <CheckoutPage
+          onBack={() => setPage('menu')}
+          onConfirm={handleConfirm}
+        />
+      )}
+      {page === 'confirmation' && confirmedOrder && (
+        <ConfirmationPage
+          order={confirmedOrder}
+          onBackToMenu={() => {
+            setPage('menu');
+            setConfirmedOrder(null);
+          }}
+        />
+      )}
+      {page === 'admin' && <AdminPage />}
+
+      {cartOpen && (
+        <>
+          <div
+            className="modal-overlay"
+            onClick={() => setCartOpen(false)}
+            style={{ zIndex: 250 }}
+          />
+          <CartDrawer
+            onClose={() => setCartOpen(false)}
+            onCheckout={() => {
+              setCartOpen(false);
+              setPage('checkout');
+            }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function WrappedApp() {
+  return (
+    <CartProvider>
+      <App />
+    </CartProvider>
+  );
+}
