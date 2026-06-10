@@ -997,10 +997,6 @@ function CheckoutPage({ onBack, onConfirm }) {
                 <div className="payment-opt-icon">💳</div>
                 <div><div className="payment-opt-label">Pay Now (SumUp)</div><div className="payment-opt-sub">Secure card payment</div></div>
               </div>
-              <div className={`payment-opt ${payment === "on_arrival" ? "selected" : ""}`} onClick={() => setPayment("on_arrival")}>
-                <div className="payment-opt-icon">💵</div>
-                <div><div className="payment-opt-label">Pay on Collection / Delivery</div><div className="payment-opt-sub">Cash or card when you receive</div></div>
-              </div>
             </div>
           </div>
         </div>
