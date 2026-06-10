@@ -1329,7 +1329,7 @@ function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        access_key: "YOUR_ACCESS_KEY_HERE",
+        access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
         subject: "📦 New Teebakes Order",
         name: order.name,
         email: order.email,
