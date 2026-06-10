@@ -1051,7 +1051,7 @@ function ConfirmationPage({ order, onBackToMenu }) {
           ["Type", order.type === "collection" ? "🏪 Collection" : "🚗 Delivery"],
           ["Date", order.date],
           ["Time", order.time],
-          ["Payment", order.payment === "card" ? "💳 Paid by card" : "💵 Pay on arrival"],
+          ["Payment", order.payment === "card" ? "💳 Paid by card"
           ["Total", `£${order.total.toFixed(2)}`],
         ].map(([l, v]) => (
           <div key={l} className="confirm-row">
@@ -1252,7 +1252,7 @@ function playNotificationSound() {
 // ============================================================
 // ADMIN PIN LOCK
 // ============================================================
-const ADMIN_PIN = "1234"; // Change this to your own PIN!
+const ADMIN_PIN = "0408"; // Change this to your own PIN!
 
 function AdminPinLock({ onUnlock }) {
   const [pin, setPin] = useState("");
