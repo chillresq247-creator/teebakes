@@ -1051,7 +1051,7 @@ function ConfirmationPage({ order, onBackToMenu }) {
           ["Type", order.type === "collection" ? "🏪 Collection" : "🚗 Delivery"],
           ["Date", order.date],
           ["Time", order.time],
-          ["Payment","💳 Paid by card"],
+          ["Payment", "Paid by card"],
           ["Total", `£${order.total.toFixed(2)}`],
         ].map(([l, v]) => (
           <div key={l} className="confirm-row">
