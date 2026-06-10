@@ -1324,7 +1324,32 @@ function App() {
       time: order.time,
       payment_method: order.payment,
       order_status: "new"
+    });// Send new order alert email
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: "YOUR_ACCESS_KEY_HERE",
+        subject: "📦 New Teebakes Order",
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        message: `
+    Order Details:
+    -------------------
+    Name: ${order.name}
+    Phone: ${order.phone}
+    Email: ${order.email}
+    Items: ${order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
+    Total: £${order.total.toFixed(2)}
+    Type: ${order.type === 'collection' ? 'Collection' : 'Delivery'}
+    Date: ${order.date}
+    Time: ${order.time}
+    Notes: ${order.notes || 'None'}
+        `
+      })
     });
+    
     if (error) console.error("Order save error:", error);
     setConfirmedOrder(order);
     dispatch({ type: "CLEAR" });
