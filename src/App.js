@@ -458,7 +458,7 @@ function MenuPage() {
           <div className="hours-row open-day"><span>Saturday</span><span>1:00pm – 11:00pm ✅</span></div>
           <div className="hours-row open-day"><span>Sunday</span><span>1:00pm – 11:00pm ✅</span></div>
           <div className="hours-row"><span>Monday – Thursday</span><span>Pre-order only (24hr notice)</span></div>
-          <div className="hours-row"><span>Delivery fee</span><span>£2.50 · Min order £10</span></div>
+          <div className="hours-row"><span>Delivery fee</span><span>£2.50 · Min order £10 (delivery only)</span></div>
           <div className="hours-row"><span>Whole pies</span><span>⚠️ 24hr notice required</span></div>
         </div>
       </div>
