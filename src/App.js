@@ -55,7 +55,7 @@ function generateTimeSlots() {
   slots.push("23:00");
   return slots;
 }
-const LIVE_TIME_SLOTS = generateTimeSlots();
+const   _TIME_SLOTS = generateTimeSlots();
 const PREORDER_TIME_SLOTS = generateTimeSlots();
 
 function fmtDate(d) {
