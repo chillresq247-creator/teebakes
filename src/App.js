@@ -27,24 +27,27 @@ function CartProvider({ children }) {
   return <CartContext.Provider value={{ cart, dispatch, total, count }}>{children}</CartContext.Provider>;
 }
 
-const MENU = [
-  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", options:{} },
-  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]} },
-  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]} },
-  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]} },
-  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]} },
+// ============================================================
+// MENU — available flag controls customer visibility
+// ============================================================
+const INITIAL_MENU = [
+  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{} },
+  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]} },
+  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]} },
+  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
+  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
+  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
+  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
+  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
+  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]} },
+  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]} },
 ];
 
+// ============================================================
 // TRADING HOURS
-// Fri=5, Sat=6, Sun=0 => OPEN 1pm-11pm (live orders + ASAP collection)
-// Mon=1, Tue=2, Wed=3, Thu=4 => PRE-ORDER ONLY (24hr notice)
-const LIVE_DAYS = [5, 6, 0];
-const PREORDER_DAYS = [1, 2, 3, 4];
+// ============================================================
+const LIVE_DAYS = [5, 6, 0]; // Fri, Sat, Sun
+const PREORDER_DAYS = [1, 2, 3, 4]; // Mon-Thu
 
 function generateTimeSlots() {
   const slots = [];
@@ -55,8 +58,7 @@ function generateTimeSlots() {
   slots.push("23:00");
   return slots;
 }
-const   _TIME_SLOTS = generateTimeSlots();
-const PREORDER_TIME_SLOTS = generateTimeSlots();
+const TIME_SLOTS = generateTimeSlots();
 
 function fmtDate(d) {
   return d.toLocaleDateString("en-GB", { weekday:"short", month:"short", day:"numeric" });
@@ -77,6 +79,7 @@ function getAvailableDays(n) {
     d.setHours(0,0,0,0);
     const type = getDayType(d);
     if (!type) continue;
+    if (i === 0 && new Date().getHours() >= 23) continue;
     days.push({ date:d, label:fmtDate(d), type });
     if (days.length === n) break;
   }
@@ -88,6 +91,9 @@ function isTodayLive() {
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
 }
 
+// ============================================================
+// STYLES
+// ============================================================
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -244,6 +250,11 @@ const STYLES = `
   .admin-nav-btn.active { background: var(--yellow); color: var(--dark); font-weight: 900; }
   .admin-main { flex: 1; padding: 2rem; background: var(--dark); overflow-y: auto; }
   .admin-page-title { font-family: 'Bangers', cursive; font-size: 1.8rem; color: var(--yellow); letter-spacing: 3px; margin-bottom: 1.5rem; }
+  .pause-banner { background: rgba(220,50,50,0.15); border: 2px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .pause-banner-text { font-weight: 800; color: #e06060; font-size: 0.9rem; }
+  .pause-btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; transition: all 0.2s; }
+  .pause-btn.paused { background: var(--green); color: white; }
+  .pause-btn.open { background: #e06060; color: white; }
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .stat-card { background: #1a1040; border-radius: 12px; padding: 1.2rem; border: 1px solid rgba(245,197,66,0.12); }
   .stat-label { font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; }
@@ -272,6 +283,9 @@ const STYLES = `
   .toggle-avail { margin-top: 0.5rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: none; font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
   .toggle-avail.on { background: rgba(74,160,70,0.15); color: #4fa84b; }
   .toggle-avail.off { background: rgba(220,50,50,0.15); color: #e06060; }
+  .store-closed-banner { background: rgba(220,50,50,0.12); border-bottom: 2px solid rgba(220,50,50,0.4); padding: 1rem 1.5rem; text-align: center; }
+  .store-closed-title { font-family: 'Bangers', cursive; font-size: 1.4rem; color: #e06060; letter-spacing: 2px; margin-bottom: 0.3rem; }
+  .store-closed-sub { font-size: 0.85rem; color: rgba(255,255,255,0.4); }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -280,6 +294,9 @@ const STYLES = `
   @media (max-width: 500px) { .cart-drawer { width: 100%; } .admin-layout { flex-direction: column; } .admin-sidebar { width: 100%; } }
 `;
 
+// ============================================================
+// LOGO
+// ============================================================
 let _logoId = 0;
 function TeeBakesLogo({ size = 48 }) {
   const [uid] = useState(() => `tb${++_logoId}`);
@@ -324,6 +341,22 @@ function playNotificationSound() {
       osc.start(ctx.currentTime + i*0.15); osc.stop(ctx.currentTime + i*0.15 + 0.3);
     });
   } catch(e) {}
+}
+
+// ============================================================
+// SHARED MENU STATE — so admin changes reflect on customer side
+// ============================================================
+const MenuStateContext = createContext();
+function MenuStateProvider({ children }) {
+  const [menuItems, setMenuItems] = useState(INITIAL_MENU);
+  const [storePaused, setStorePaused] = useState(false);
+  const toggleItem = (id) => setMenuItems(items => items.map(i => i.id === id ? {...i, available: !i.available} : i));
+  const availableItems = menuItems.filter(i => i.available);
+  return (
+    <MenuStateContext.Provider value={{ menuItems, availableItems, toggleItem, storePaused, setStorePaused }}>
+      {children}
+    </MenuStateContext.Provider>
+  );
 }
 
 function MenuCard({ item, onOpen }) {
@@ -423,20 +456,29 @@ function CartDrawer({ onClose, onCheckout }) {
 
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
+  const { availableItems, storePaused } = useContext(MenuStateContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
+
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
     { id:"donut", label:"🍩 Donuts" },
     { id:"cookie_pie", label:"🥧 Cookie Pies" },
     { id:"cookie_cup", label:"🍪 Cookie Cups" },
   ];
-  const filtered = activeTab === "all" ? MENU : MENU.filter(i => i.category === activeTab);
+  const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
+
   return (
     <>
-      <div className={`status-banner ${todayLive?"open":"closed"}`}>
-        {todayLive ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
+      {storePaused && (
+        <div className="store-closed-banner">
+          <div className="store-closed-title">🔴 NOT TAKING ORDERS RIGHT NOW</div>
+          <div className="store-closed-sub">We'll be back soon — check our socials for updates</div>
+        </div>
+      )}
+      <div className={`status-banner ${todayLive && !storePaused ? "open" : "closed"}`}>
+        {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
       </div>
       <div className="hero">
         <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
@@ -466,7 +508,11 @@ function MenuPage() {
         {tabs.map(t => <button key={t.id} className={`cat-tab ${activeTab===t.id?"active":""}`} onClick={() => setActiveTab(t.id)}>{t.label}</button>)}
       </div>
       <div className="page" style={{paddingBottom:count>0?"5rem":"1.5rem"}}>
-        <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
+        {filtered.length === 0 ? (
+          <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
+        ) : (
+          <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
+        )}
       </div>
       {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} onAdd={(item,options) => dispatch({type:"ADD",item:{...item,options}})} />}
       {count > 0 && (
@@ -481,6 +527,7 @@ function MenuPage() {
 
 function CheckoutPage({ onBack, onConfirm }) {
   const { cart, total } = useContext(CartContext);
+  const { storePaused } = useContext(MenuStateContext);
   const availableDays = useState(() => getAvailableDays(12))[0];
   const [type, setType] = useState("collection");
   const [selDateLabel, setSelDateLabel] = useState(null);
@@ -489,22 +536,89 @@ function CheckoutPage({ onBack, onConfirm }) {
   const [asap, setAsap] = useState(false);
   const [form, setForm] = useState({ name:"", email:"", phone:"", address:"", notes:"" });
   const [submitting, setSubmitting] = useState(false);
+  const [payError, setPayError] = useState(null);
 
   const deliveryFee = type === "delivery" ? 2.50 : 0;
   const orderTotal = total + deliveryFee;
   const showAsap = selDayType === "live" && type === "collection";
-  const timeSlots = LIVE_TIME_SLOTS;
-  const canSubmit = form.name && form.email && form.phone && selDateLabel && (asap || selTime) && (type === "collection" || form.address) && !submitting;
+  const canSubmit = form.name && form.email && form.phone && selDateLabel && (asap || selTime) && (type === "collection" || form.address) && !submitting && !storePaused;
 
   function selectDate(day) { setSelDateLabel(day.label); setSelDayType(day.type); setSelTime(null); setAsap(false); }
-  function handleAsap() { setAsap(true); setSelTime(null); }
-  function handleTimeSelect(t) { setSelTime(t); setAsap(false); }
 
   async function handleSubmit() {
     setSubmitting(true);
+    setPayError(null);
     const orderId = "TB-" + Math.random().toString(36).substr(2,6).toUpperCase();
-    await onConfirm({ orderId, ...form, type, date:selDateLabel, time:asap?"ASAP":selTime, isAsap:asap, payment:"card", items:cart, total:orderTotal });
-    setSubmitting(false);
+
+    // 1. Save order to Supabase first
+    const { error: dbError } = await supabase.from("orders").insert({
+      id: orderId,
+      customer_name: form.name,
+      customer_email: form.email,
+      customer_phone: form.phone,
+      items: cart,
+      total: orderTotal,
+      type,
+      delivery_address: form.address || null,
+      date: selDateLabel,
+      time: asap ? "ASAP" : selTime,
+      payment_method: "card",
+      order_status: "pending_payment",
+      notes: form.notes || null,
+    });
+    if (dbError) console.error("Supabase error:", dbError);
+
+    // 2. Send email notification
+    try {
+      await fetch("https://api.web3forms.com/submit", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
+          subject: `📦 New TeeBakes Order — ${orderId}`,
+          name: form.name, email: form.email,
+          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${asap?"ASAP ⚡":selTime}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
+        })
+      });
+    } catch(e) { console.error("Email error:", e); }
+
+    // 3. Create SumUp checkout
+    try {
+      const res = await fetch("/api/sumup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: orderTotal,
+          currency: "GBP",
+          orderId,
+          customerEmail: form.email,
+          customerName: form.name,
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        // Redirect to SumUp payment page
+        window.location.href = data.url;
+      } else {
+        console.error("SumUp error:", data);
+        setPayError("Payment setup failed. Please try again or call us.");
+        setSubmitting(false);
+      }
+    } catch(e) {
+      console.error("SumUp fetch error:", e);
+      setPayError("Could not connect to payment provider. Please try again.");
+      setSubmitting(false);
+    }
+  }
+
+  if (storePaused) {
+    return (
+      <div className="page" style={{textAlign:"center",padding:"4rem 1.5rem"}}>
+        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔴</div>
+        <div style={{fontFamily:"'Bangers',cursive",fontSize:"2rem",color:"#e06060",letterSpacing:"2px",marginBottom:"0.5rem"}}>NOT TAKING ORDERS</div>
+        <div style={{color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>We're not accepting orders right now. Check back soon!</div>
+        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
+      </div>
+    );
   }
 
   return (
@@ -530,17 +644,13 @@ function CheckoutPage({ onBack, onConfirm }) {
                 </button>
               ))}
             </div>
-            {selDayType === "preorder" && (
-              <div className="preorder-notice">📋 <strong>Pre-order day</strong> — your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>
-            )}
+            {selDayType === "preorder" && <div className="preorder-notice">📋 <strong>Pre-order day</strong> — your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
             {selDateLabel && (
               <>
                 <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>⏰ PICK A TIME</div>
-                {showAsap && (
-                  <button className={`asap-btn ${asap?"selected":""}`} onClick={handleAsap}>⚡ Collection ASAP — I'll be there soon!</button>
-                )}
+                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>⚡ Collection ASAP — I'll be there soon!</button>}
                 <div className="time-grid">
-                  {timeSlots.map(t => <button key={t} className={`time-btn ${selTime===t?"selected":""}`} onClick={() => handleTimeSelect(t)}>{t}</button>)}
+                  {TIME_SLOTS.map(t => <button key={t} className={`time-btn ${selTime===t?"selected":""}`} onClick={() => { setSelTime(t); setAsap(false); }}>{t}</button>)}
                 </div>
               </>
             )}
@@ -570,9 +680,10 @@ function CheckoutPage({ onBack, onConfirm }) {
               <div style={{fontSize:"1.5rem"}}>💳</div>
               <div>
                 <div style={{fontWeight:800,fontSize:"0.9rem",color:"var(--white)"}}>Pay by Card (SumUp)</div>
-                <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>Secure payment — required to confirm your order</div>
+                <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>You'll be taken to SumUp to pay securely — then brought back here</div>
               </div>
             </div>
+            {payError && <div style={{marginTop:"0.8rem",background:"rgba(220,50,50,0.15)",border:"1px solid rgba(220,50,50,0.4)",borderRadius:"8px",padding:"0.7rem",fontSize:"0.82rem",color:"#e06060"}}>{payError}</div>}
           </div>
         </div>
         <div>
@@ -588,7 +699,7 @@ function CheckoutPage({ onBack, onConfirm }) {
                 {selDayType==="preorder" && <><br />📋 Pre-order — we'll confirm by email</>}
               </div>
             )}
-            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"PLACING ORDER...":"PAY & PLACE ORDER →"}</button>
+            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"REDIRECTING TO PAYMENT...":"PAY & PLACE ORDER →"}</button>
             {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
           </div>
         </div>
@@ -613,32 +724,51 @@ function ConfirmationPage({ order, onBackToMenu }) {
   );
 }
 
-function AdminDashboard() {
+// ============================================================
+// ADMIN
+// ============================================================
+function AdminDashboard({ storePaused, setStorePaused }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const prevCount = React.useRef(0);
+
   useEffect(() => { loadOrders(); const iv = setInterval(loadOrders,30000); return () => clearInterval(iv); }, []);
+
   async function loadOrders() {
     const { data, error } = await supabase.from("orders").select("*").order("created_at",{ascending:false});
     if (data) { if (prevCount.current>0&&data.length>prevCount.current) playNotificationSound(); prevCount.current=data.length; setOrders(data); }
     if (error) console.error(error);
     setLoading(false);
   }
+
   async function updateStatus(id,status) {
     await supabase.from("orders").update({order_status:status}).eq("id",id);
     setOrders(os => os.map(o => o.id===id?{...o,order_status:status}:o));
   }
+
   const filtered = filter==="all" ? orders : orders.filter(o => o.order_status===filter);
+
   return (
     <div>
+      {/* PAUSE ORDERS TOGGLE */}
+      <div className="pause-banner">
+        <div>
+          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED — customers cannot order" : "🟢 Store is OPEN — accepting orders"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Toggle to pause/resume orders instantly</div>
+        </div>
+        <button className={`pause-btn ${storePaused?"paused":"open"}`} onClick={() => setStorePaused(!storePaused)}>
+          {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
+        </button>
+      </div>
+
       <div className="stats-grid">
         {[{label:"Total Orders",value:orders.length,sub:`${orders.filter(o=>o.order_status==="new").length} new`},{label:"Revenue",value:`£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},{label:"Collections",value:orders.filter(o=>o.type==="collection").length,sub:"total"},{label:"Deliveries",value:orders.filter(o=>o.type==="delivery").length,sub:"total"}].map(s => (
           <div key={s.label} className="stat-card"><div className="stat-label">{s.label}</div><div className="stat-value">{s.value}</div><div className="stat-sub">{s.sub}</div></div>
         ))}
       </div>
       <div className="orders-filter">
-        {["all","new","confirmed","ready","completed"].map(f => <button key={f} className={`filter-btn ${filter===f?"active":""}`} onClick={() => setFilter(f)}>{f.charAt(0).toUpperCase()+f.slice(1)}</button>)}
+        {["all","new","confirmed","ready","completed","pending_payment"].map(f => <button key={f} className={`filter-btn ${filter===f?"active":""}`} onClick={() => setFilter(f)}>{f.charAt(0).toUpperCase()+f.slice(1).replace("_"," ")}</button>)}
       </div>
       {loading ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading orders...</div>
       : filtered.length===0 ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet 👀</div>
@@ -658,7 +788,11 @@ function AdminDashboard() {
             <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
             <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
             <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
-              <option value="new">New</option><option value="confirmed">Confirmed</option><option value="ready">Ready</option><option value="completed">Completed</option>
+              <option value="pending_payment">Pending Payment</option>
+              <option value="new">New</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="ready">Ready</option>
+              <option value="completed">Completed</option>
             </select>
           </div>
         </div>
@@ -668,21 +802,22 @@ function AdminDashboard() {
 }
 
 function AdminMenu() {
-  const [items, setItems] = useState(MENU.map(i => ({...i,available:true})));
-  const toggle = id => setItems(is => is.map(i => i.id===id?{...i,available:!i.available}:i));
+  const { menuItems, toggleItem } = useContext(MenuStateContext);
   return (
     <div>
       {[{id:"donut",label:"🍩 Donuts"},{id:"cookie_pie",label:"🥧 Cookie Pies"},{id:"cookie_cup",label:"🍪 Cookie Cups"}].map(cat => (
         <div key={cat.id} style={{marginBottom:"2rem"}}>
           <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.1rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.8rem"}}>{cat.label}</div>
           <div className="admin-menu-grid">
-            {items.filter(i => i.category===cat.id).map(item => (
-              <div key={item.id} className="admin-menu-card">
+            {menuItems.filter(i => i.category===cat.id).map(item => (
+              <div key={item.id} className="admin-menu-card" style={{opacity:item.available?1:0.5}}>
                 <span style={{fontSize:"1.8rem"}}>{item.emoji}</span>
                 <div>
                   <div className="admin-card-name">{item.name}</div>
                   <div className="admin-card-price">from £{item.price.toFixed(2)}</div>
-                  <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggle(item.id)}>{item.available?"● Available":"✗ Hidden"}</button>
+                  <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggleItem(item.id)}>
+                    {item.available?"● Available":"✗ Hidden from customers"}
+                  </button>
                 </div>
               </div>
             ))}
@@ -695,6 +830,7 @@ function AdminMenu() {
 
 function AdminPage() {
   const [tab, setTab] = useState("orders");
+  const { storePaused, setStorePaused } = useContext(MenuStateContext);
   return (
     <div className="admin-layout">
       <div className="admin-sidebar">
@@ -703,7 +839,7 @@ function AdminPage() {
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":"MENU MANAGER"}</div>
-        {tab==="orders" && <AdminDashboard />}
+        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} />}
         {tab==="menu" && <AdminMenu />}
       </div>
     </div>
@@ -735,34 +871,11 @@ function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
-  const { count, dispatch } = useContext(CartContext);
+  const { count } = useContext(CartContext);
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
   useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Walsall"; }, []);
-
-  async function handleConfirm(order) {
-    const { error } = await supabase.from("orders").insert({
-      id: order.orderId, customer_name: order.name, customer_email: order.email,
-      customer_phone: order.phone, items: order.items, total: order.total,
-      type: order.type, delivery_address: order.address||null,
-      date: order.date, time: order.time, payment_method: "card",
-      order_status: "new", notes: order.notes||null,
-    });
-    if (error) console.error("Supabase error:", error);
-    try {
-      await fetch("https://api.web3forms.com/submit", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
-          subject: `📦 New TeeBakes Order — ${order.orderId}`,
-          name: order.name, email: order.email,
-          message: `New order!\n\nID: ${order.orderId}\nName: ${order.name}\nEmail: ${order.email}\nPhone: ${order.phone}\nType: ${order.type}\n${order.type==="delivery"?`Address: ${order.address}\n`:""}\nDate: ${order.date}\nTime: ${order.isAsap?"ASAP ⚡":order.time}\nItems: ${order.items.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${order.notes||"None"}\nTotal: £${order.total.toFixed(2)}`
-        })
-      });
-    } catch(e) { console.error("Email error:", e); }
-    setConfirmedOrder(order); dispatch({type:"CLEAR"}); setPage("confirmation"); setCartOpen(false);
-  }
 
   return (
     <div className="app">
@@ -782,7 +895,7 @@ function App() {
         </div>
       </nav>
       {page==="menu" && <MenuPage />}
-      {page==="checkout" && <CheckoutPage onBack={() => setPage("menu")} onConfirm={handleConfirm} />}
+      {page==="checkout" && <CheckoutPage onBack={() => setPage("menu")} onConfirm={(order) => { setConfirmedOrder(order); setPage("confirmation"); }} />}
       {page==="confirmation" && confirmedOrder && <ConfirmationPage order={confirmedOrder} onBackToMenu={() => { setPage("menu"); setConfirmedOrder(null); }} />}
       {page==="admin" && (adminUnlocked ? <AdminPage /> : <AdminPinLock onUnlock={() => setAdminUnlocked(true)} />)}
       {cartOpen && (
@@ -796,5 +909,11 @@ function App() {
 }
 
 export default function WrappedApp() {
-  return <CartProvider><App /></CartProvider>;
+  return (
+    <MenuStateProvider>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </MenuStateProvider>
+  );
 }
