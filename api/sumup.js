@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         order_id: orderId,
-        amount: Number(amount).toFixed(2),
+        amount: Number(amount),
         currency,
         pay_to_email: "donutvanman@gmail.com",
         description: `TeeBakes Order ${orderId}`,
