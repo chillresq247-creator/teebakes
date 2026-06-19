@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.SUMUP_SECRET_KEY}`,
       },
       body: JSON.stringify({
-        checkout_reference: orderId,
+        order_id: orderId,
         amount: parseFloat(amount).toFixed(2),
         currency,
         pay_to_email: "donutvanman@gmail.com",
