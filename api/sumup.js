@@ -10,33 +10,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Get access token from SumUp using client credentials
-    const tokenRes = await fetch("https://api.sumup.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-        client_id: process.env.SUMUP_CLIENT_ID,
-        client_secret: process.env.SUMUP_CLIENT_SECRET,
-      }),
-    });
-
-    const tokenData = await tokenRes.json();
-
-    if (!tokenRes.ok || !tokenData.access_token) {
-      console.error("SumUp token error:", tokenData);
-      return res.status(500).json({
-        error: "Failed to authenticate with SumUp",
-        details: tokenData,
-      });
-    }
-
-    // Step 2: Create the checkout
     const checkoutRes = await fetch("https://api.sumup.com/v0.1/checkouts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tokenData.access_token}`,
+        Authorization: `Bearer ${process.env.SUMUP_SECRET_KEY}`,
       },
       body: JSON.stringify({
         checkout_reference: orderId,
@@ -44,7 +22,7 @@ export default async function handler(req, res) {
         currency,
         pay_to_email: "donutvanman@gmail.com",
         description: `TeeBakes Order ${orderId}`,
-        return_url: process.env.RETURN_URL || `https://teebakes.vercel.app/confirmation`,
+        return_url: process.env.RETURN_URL || "https://teebakes.vercel.app/confirmation",
       }),
     });
 
@@ -66,4 +44,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server error", details: err.message });
   }
 }
-
