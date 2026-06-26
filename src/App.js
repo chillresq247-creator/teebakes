@@ -87,7 +87,7 @@ function isTodayLive() {
 
 // Generate SumUp payment link with exact amount
 function getSumUpPaymentLink(amount, orderId) {
-    return `https://tee-bakes-donuts-shakes.sumupstore.com/?amount=${amount.toFixed(2)}&ref=${orderId}`;
+    return `https://pay.sumup.com/b2c/QZ9ZMUVG?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
   }
 
 // Generate QR code URL using Google Charts API (free, no key needed)
