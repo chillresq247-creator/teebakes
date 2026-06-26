@@ -733,9 +733,11 @@ function ConfirmationPage({ order, onBackToMenu }) {
       <div className="pay-section">
         <div className="pay-title">💳 COMPLETE PAYMENT</div>
         <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
-
+        <div style={{fontSize:"0.82rem", color:"#666", margin:"12px 0", textAlign:"center"}}>
+  When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
+</div>
         <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
-          PAY NOW WITH SUMUP →
+        PAY £{order.total.toFixed(2)} ON SUMUP →
         </a>
 
         <div className="pay-divider">
