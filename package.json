@@ -1,7 +1,7 @@
 {
   "name": "react",
   "version": "0.0.0",
-  "homepage": ".",
+  "homepage": "https://chillresq247-creator.github.io/teebakes",
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
