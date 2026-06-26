@@ -27,9 +27,6 @@ function CartProvider({ children }) {
   return <CartContext.Provider value={{ cart, dispatch, total, count }}>{children}</CartContext.Provider>;
 }
 
-// ============================================================
-// MENU — available flag controls customer visibility
-// ============================================================
 const INITIAL_MENU = [
   { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{} },
   { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]} },
@@ -43,11 +40,9 @@ const INITIAL_MENU = [
   { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]} },
 ];
 
-// ============================================================
-// TRADING HOURS
-// ============================================================
-const LIVE_DAYS = [5, 6, 0]; // Fri, Sat, Sun
-const PREORDER_DAYS = [1, 2, 3, 4]; // Mon-Thu
+const LIVE_DAYS = [5, 6, 0];
+const PREORDER_DAYS = [1, 2, 3, 4];
+const MERCHANT_CODE = "MCXYESKY";
 
 function generateTimeSlots() {
   const slots = [];
@@ -91,9 +86,16 @@ function isTodayLive() {
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
 }
 
-// ============================================================
-// STYLES
-// ============================================================
+// Generate SumUp payment link with exact amount
+function getSumUpPaymentLink(amount, orderId) {
+  return `https://pay.sumup.com/b2c/${MERCHANT_CODE}?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
+}
+
+// Generate QR code URL using Google Charts API (free, no key needed)
+function getQRCodeUrl(text) {
+  return `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(text)}&choe=UTF-8`;
+}
+
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -231,17 +233,37 @@ const STYLES = `
   .place-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
   .back-nav-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
   .back-nav-btn:hover { color: var(--yellow); border-color: var(--yellow); }
-  .confirmation { max-width: 520px; margin: 3rem auto; padding: 1.5rem; text-align: center; }
+
+  /* CONFIRMATION */
+  .confirmation { max-width: 520px; margin: 2rem auto; padding: 1.5rem; text-align: center; }
   .confirm-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease; }
   .confirm-title { font-family: 'Bangers', cursive; font-size: 2.5rem; color: var(--yellow); letter-spacing: 3px; margin-bottom: 0.5rem; }
-  .confirm-sub { color: rgba(255,255,255,0.5); margin-bottom: 2rem; line-height: 1.6; }
+  .confirm-sub { color: rgba(255,255,255,0.5); margin-bottom: 1.5rem; line-height: 1.6; }
   .confirm-card { background: #1a1040; border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(245,197,66,0.2); text-align: left; margin-bottom: 1.5rem; }
   .confirm-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.88rem; }
   .confirm-row:last-child { border-bottom: none; }
   .confirm-label { color: rgba(255,255,255,0.4); font-weight: 600; }
   .confirm-value { font-weight: 800; color: var(--white); }
-  .back-btn { background: var(--yellow); color: var(--dark); border: none; cursor: pointer; padding: 0.9rem 2.5rem; border-radius: 10px; font-family: 'Bangers', cursive; font-size: 1.2rem; letter-spacing: 2px; }
-  .back-btn:hover { background: var(--yellow-dark); }
+
+  /* PAYMENT SECTION */
+  .pay-section { background: #1a1040; border-radius: 16px; padding: 1.5rem; border: 2px solid rgba(245,197,66,0.3); margin-bottom: 1.5rem; text-align: center; }
+  .pay-title { font-family: 'Bangers', cursive; font-size: 1.4rem; color: var(--yellow); letter-spacing: 2px; margin-bottom: 0.4rem; }
+  .pay-amount { font-size: 2rem; font-weight: 900; color: var(--white); margin-bottom: 1rem; }
+  .pay-amount span { color: var(--yellow); }
+  .pay-now-btn { display: block; width: 100%; padding: 1.1rem; background: var(--yellow); color: var(--dark); border: none; cursor: pointer; border-radius: 12px; font-family: 'Bangers', cursive; font-size: 1.4rem; letter-spacing: 2px; text-decoration: none; margin-bottom: 1.2rem; transition: all 0.2s; }
+  .pay-now-btn:hover { background: var(--yellow-dark); transform: translateY(-2px); }
+  .pay-divider { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+  .pay-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+  .pay-divider-text { font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: 700; }
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .qr-img { width: 160px; height: 160px; border-radius: 12px; background: white; padding: 8px; }
+  .qr-label { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+  .pay-note { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 1rem; line-height: 1.5; }
+
+  .back-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; padding: 0.9rem 2.5rem; border-radius: 10px; font-family: 'Bangers', cursive; font-size: 1.2rem; letter-spacing: 2px; }
+  .back-btn:hover { color: var(--yellow); border-color: var(--yellow); }
+
+  /* ADMIN */
   .admin-layout { display: flex; min-height: calc(100vh - 64px); }
   .admin-sidebar { width: 210px; background: #0f0a1e; padding: 1.5rem 1rem; border-right: 1px solid rgba(245,197,66,0.15); flex-shrink: 0; }
   .admin-sidebar-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 1rem; padding: 0 0.5rem; }
@@ -250,11 +272,14 @@ const STYLES = `
   .admin-nav-btn.active { background: var(--yellow); color: var(--dark); font-weight: 900; }
   .admin-main { flex: 1; padding: 2rem; background: var(--dark); overflow-y: auto; }
   .admin-page-title { font-family: 'Bangers', cursive; font-size: 1.8rem; color: var(--yellow); letter-spacing: 3px; margin-bottom: 1.5rem; }
-  .pause-banner { background: rgba(220,50,50,0.15); border: 2px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .pause-banner-text { font-weight: 800; color: #e06060; font-size: 0.9rem; }
+  .pause-banner { background: rgba(220,50,50,0.1); border: 1.5px solid rgba(220,50,50,0.3); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .pause-banner.open-state { background: rgba(79,168,75,0.1); border-color: rgba(79,168,75,0.3); }
+  .pause-banner-text { font-weight: 800; font-size: 0.9rem; }
+  .pause-banner.open-state .pause-banner-text { color: var(--green); }
+  .pause-banner:not(.open-state) .pause-banner-text { color: #e06060; }
   .pause-btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; transition: all 0.2s; }
-  .pause-btn.paused { background: var(--green); color: white; }
-  .pause-btn.open { background: #e06060; color: white; }
+  .pause-btn.is-paused { background: var(--green); color: white; }
+  .pause-btn.is-open { background: #e06060; color: white; }
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .stat-card { background: #1a1040; border-radius: 12px; padding: 1.2rem; border: 1px solid rgba(245,197,66,0.12); }
   .stat-label { font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; }
@@ -274,6 +299,7 @@ const STYLES = `
   .status-confirmed { background: rgba(74,160,70,0.15); color: #4fa84b; }
   .status-ready { background: rgba(74,120,200,0.15); color: #6ea0d4; }
   .status-completed { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); }
+  .status-pending_payment { background: rgba(255,150,50,0.15); color: #ff9650; }
   .status-select { padding: 0.35rem 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); font-family: 'Nunito', sans-serif; font-size: 0.8rem; color: white; cursor: pointer; margin-top: 0.4rem; }
   .order-total-badge { font-weight: 900; font-size: 1.1rem; color: var(--yellow); }
   .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
@@ -294,9 +320,6 @@ const STYLES = `
   @media (max-width: 500px) { .cart-drawer { width: 100%; } .admin-layout { flex-direction: column; } .admin-sidebar { width: 100%; } }
 `;
 
-// ============================================================
-// LOGO
-// ============================================================
 let _logoId = 0;
 function TeeBakesLogo({ size = 48 }) {
   const [uid] = useState(() => `tb${++_logoId}`);
@@ -343,9 +366,6 @@ function playNotificationSound() {
   } catch(e) {}
 }
 
-// ============================================================
-// SHARED MENU STATE — so admin changes reflect on customer side
-// ============================================================
 const MenuStateContext = createContext();
 function MenuStateProvider({ children }) {
   const [menuItems, setMenuItems] = useState(INITIAL_MENU);
@@ -460,7 +480,6 @@ function MenuPage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
-
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
     { id:"donut", label:"🍩 Donuts" },
@@ -468,7 +487,6 @@ function MenuPage() {
     { id:"cookie_cup", label:"🍪 Cookie Cups" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
-
   return (
     <>
       {storePaused && (
@@ -508,11 +526,10 @@ function MenuPage() {
         {tabs.map(t => <button key={t.id} className={`cat-tab ${activeTab===t.id?"active":""}`} onClick={() => setActiveTab(t.id)}>{t.label}</button>)}
       </div>
       <div className="page" style={{paddingBottom:count>0?"5rem":"1.5rem"}}>
-        {filtered.length === 0 ? (
-          <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
-        ) : (
-          <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
-        )}
+        {filtered.length === 0
+          ? <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
+          : <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
+        }
       </div>
       {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} onAdd={(item,options) => dispatch({type:"ADD",item:{...item,options}})} />}
       {count > 0 && (
@@ -536,7 +553,6 @@ function CheckoutPage({ onBack, onConfirm }) {
   const [asap, setAsap] = useState(false);
   const [form, setForm] = useState({ name:"", email:"", phone:"", address:"", notes:"" });
   const [submitting, setSubmitting] = useState(false);
-  const [payError, setPayError] = useState(null);
 
   const deliveryFee = type === "delivery" ? 2.50 : 0;
   const orderTotal = total + deliveryFee;
@@ -547,11 +563,11 @@ function CheckoutPage({ onBack, onConfirm }) {
 
   async function handleSubmit() {
     setSubmitting(true);
-    setPayError(null);
     const orderId = "TB-" + Math.random().toString(36).substr(2,6).toUpperCase();
+    const timeLabel = asap ? "ASAP" : selTime;
 
-    // 1. Save order to Supabase first
-    const { error: dbError } = await supabase.from("orders").insert({
+    // Save to Supabase
+    const { error } = await supabase.from("orders").insert({
       id: orderId,
       customer_name: form.name,
       customer_email: form.email,
@@ -561,14 +577,14 @@ function CheckoutPage({ onBack, onConfirm }) {
       type,
       delivery_address: form.address || null,
       date: selDateLabel,
-      time: asap ? "ASAP" : selTime,
-      payment_method: "card",
-      order_status: "pending_payment",
+      time: timeLabel,
+      payment_method: "sumup",
+      order_status: "new",
       notes: form.notes || null,
     });
-    if (dbError) console.error("Supabase error:", dbError);
+    if (error) console.error("Supabase error:", error);
 
-    // 2. Send email notification
+    // Send email notification
     try {
       await fetch("https://api.web3forms.com/submit", {
         method:"POST", headers:{"Content-Type":"application/json"},
@@ -576,38 +592,20 @@ function CheckoutPage({ onBack, onConfirm }) {
           access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
           subject: `📦 New TeeBakes Order — ${orderId}`,
           name: form.name, email: form.email,
-          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${asap?"ASAP ⚡":selTime}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
+          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
         })
       });
     } catch(e) { console.error("Email error:", e); }
 
-    // 3. Create SumUp checkout
-    try {
-      const res = await fetch("/api/sumup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: orderTotal,
-          currency: "GBP",
-          orderId,
-          customerEmail: form.email,
-          customerName: form.name,
-        })
-      });
-      const data = await res.json();
-      if (data.url) {
-        // Redirect to SumUp payment page
-        window.location.href = data.url;
-      } else {
-        console.error("SumUp error:", data);
-        setPayError("Payment setup failed. Please try again or call us.");
-        setSubmitting(false);
-      }
-    } catch(e) {
-      console.error("SumUp fetch error:", e);
-      setPayError("Could not connect to payment provider. Please try again.");
-      setSubmitting(false);
-    }
+    setSubmitting(false);
+    onConfirm({
+      orderId, ...form, type,
+      date: selDateLabel,
+      time: timeLabel,
+      isAsap: asap,
+      items: cart,
+      total: orderTotal
+    });
   }
 
   if (storePaused) {
@@ -679,11 +677,10 @@ function CheckoutPage({ onBack, onConfirm }) {
             <div style={{background:"rgba(245,197,66,0.07)",border:"2px solid rgba(245,197,66,0.3)",borderRadius:"10px",padding:"1rem",display:"flex",alignItems:"center",gap:"1rem"}}>
               <div style={{fontSize:"1.5rem"}}>💳</div>
               <div>
-                <div style={{fontWeight:800,fontSize:"0.9rem",color:"var(--white)"}}>Pay by Card (SumUp)</div>
-                <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>You'll be taken to SumUp to pay securely — then brought back here</div>
+                <div style={{fontWeight:800,fontSize:"0.9rem",color:"var(--white)"}}>Pay by Card via SumUp</div>
+                <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>You'll be shown a secure payment link after placing your order</div>
               </div>
             </div>
-            {payError && <div style={{marginTop:"0.8rem",background:"rgba(220,50,50,0.15)",border:"1px solid rgba(220,50,50,0.4)",borderRadius:"8px",padding:"0.7rem",fontSize:"0.82rem",color:"#e06060"}}>{payError}</div>}
           </div>
         </div>
         <div>
@@ -699,7 +696,7 @@ function CheckoutPage({ onBack, onConfirm }) {
                 {selDayType==="preorder" && <><br />📋 Pre-order — we'll confirm by email</>}
               </div>
             )}
-            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"REDIRECTING TO PAYMENT...":"PAY & PLACE ORDER →"}</button>
+            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER →"}</button>
             {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
           </div>
         </div>
@@ -709,24 +706,61 @@ function CheckoutPage({ onBack, onConfirm }) {
 }
 
 function ConfirmationPage({ order, onBackToMenu }) {
+  const paymentLink = getSumUpPaymentLink(order.total, order.orderId);
+  const qrUrl = getQRCodeUrl(paymentLink);
+
   return (
     <div className="confirmation">
       <div className="confirm-icon">🎉</div>
       <div className="confirm-title">ORDER PLACED!</div>
-      <div className="confirm-sub">Thanks {order.name.split(" ")[0]}! Your bakes will be freshly made.<br />Confirmation sent to <strong style={{color:"var(--yellow)"}}>{order.email}</strong></div>
+      <div className="confirm-sub">
+        Thanks {order.name.split(" ")[0]}! Your order is confirmed.<br />
+        <span style={{color:"var(--yellow)",fontWeight:700}}>Now complete your payment below to secure it.</span>
+      </div>
+
       <div className="confirm-card">
-        {[["Order ID",order.orderId],["Type",order.type==="collection"?"🏪 Collection":"🚗 Delivery"],["Date",order.date],["Time",order.isAsap?"⚡ ASAP":order.time],["Payment","💳 Card"],["Total",`£${order.total.toFixed(2)}`]].map(([l,v]) => (
+        {[
+          ["Order ID", order.orderId],
+          ["Type", order.type==="collection"?"🏪 Collection":"🚗 Delivery"],
+          ["Date", order.date],
+          ["Time", order.isAsap?"⚡ ASAP":order.time],
+          ["Total", `£${order.total.toFixed(2)}`],
+        ].map(([l,v]) => (
           <div key={l} className="confirm-row"><span className="confirm-label">{l}</span><span className="confirm-value">{v}</span></div>
         ))}
       </div>
+
+      {/* PAYMENT SECTION */}
+      <div className="pay-section">
+        <div className="pay-title">💳 COMPLETE PAYMENT</div>
+        <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
+
+        <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
+          PAY NOW WITH SUMUP →
+        </a>
+
+        <div className="pay-divider">
+          <div className="pay-divider-line"></div>
+          <div className="pay-divider-text">OR SCAN QR CODE</div>
+          <div className="pay-divider-line"></div>
+        </div>
+
+        <div className="qr-wrap">
+          <img src={qrUrl} alt="Scan to pay" className="qr-img" />
+          <div className="qr-label">Scan with your phone camera to pay</div>
+        </div>
+
+        <div className="pay-note">
+          🔒 Secure payment powered by SumUp<br />
+          Your order reference: {order.orderId}
+        </div>
+      </div>
+
       <button className="back-btn" onClick={onBackToMenu}>ORDER MORE 🍩</button>
     </div>
   );
 }
 
-// ============================================================
-// ADMIN
-// ============================================================
 function AdminDashboard({ storePaused, setStorePaused }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -751,52 +785,59 @@ function AdminDashboard({ storePaused, setStorePaused }) {
 
   return (
     <div>
-      {/* PAUSE ORDERS TOGGLE */}
-      <div className="pause-banner">
+      <div className={`pause-banner ${storePaused?"":"open-state"}`}>
         <div>
-          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED — customers cannot order" : "🟢 Store is OPEN — accepting orders"}</div>
-          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Toggle to pause/resume orders instantly</div>
+          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED" : "🟢 Store is OPEN — accepting orders"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Toggle to pause or resume instantly</div>
         </div>
-        <button className={`pause-btn ${storePaused?"paused":"open"}`} onClick={() => setStorePaused(!storePaused)}>
+        <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={() => setStorePaused(!storePaused)}>
           {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
         </button>
       </div>
-
       <div className="stats-grid">
-        {[{label:"Total Orders",value:orders.length,sub:`${orders.filter(o=>o.order_status==="new").length} new`},{label:"Revenue",value:`£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},{label:"Collections",value:orders.filter(o=>o.type==="collection").length,sub:"total"},{label:"Deliveries",value:orders.filter(o=>o.type==="delivery").length,sub:"total"}].map(s => (
+        {[
+          {label:"Total Orders",value:orders.length,sub:`${orders.filter(o=>o.order_status==="new").length} new`},
+          {label:"Revenue",value:`£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},
+          {label:"Collections",value:orders.filter(o=>o.type==="collection").length,sub:"total"},
+          {label:"Deliveries",value:orders.filter(o=>o.type==="delivery").length,sub:"total"},
+        ].map(s => (
           <div key={s.label} className="stat-card"><div className="stat-label">{s.label}</div><div className="stat-value">{s.value}</div><div className="stat-sub">{s.sub}</div></div>
         ))}
       </div>
       <div className="orders-filter">
-        {["all","new","confirmed","ready","completed","pending_payment"].map(f => <button key={f} className={`filter-btn ${filter===f?"active":""}`} onClick={() => setFilter(f)}>{f.charAt(0).toUpperCase()+f.slice(1).replace("_"," ")}</button>)}
+        {["all","new","confirmed","ready","completed"].map(f =>
+          <button key={f} className={`filter-btn ${filter===f?"active":""}`} onClick={() => setFilter(f)}>{f.charAt(0).toUpperCase()+f.slice(1)}</button>
+        )}
       </div>
-      {loading ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading orders...</div>
-      : filtered.length===0 ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet 👀</div>
-      : <div className="orders-list">{filtered.map(o => (
-        <div key={o.id} className="order-card">
-          <div>
-            <div className="order-id">{o.id}</div>
-            <div className="order-name">{o.customer_name}</div>
-            <div className="order-detail">📧 {o.customer_email}</div>
-            <div className="order-detail">📱 {o.customer_phone}</div>
-            <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
-            {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
-            {o.notes && <div className="order-detail">📝 {o.notes}</div>}
-            <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}× {item.name}</span>)}</div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
-            <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
-            <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
-              <option value="pending_payment">Pending Payment</option>
-              <option value="new">New</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="ready">Ready</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-        </div>
-      ))}</div>}
+      {loading
+        ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading orders...</div>
+        : filtered.length===0
+          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet 👀</div>
+          : <div className="orders-list">{filtered.map(o => (
+              <div key={o.id} className="order-card">
+                <div>
+                  <div className="order-id">{o.id}</div>
+                  <div className="order-name">{o.customer_name}</div>
+                  <div className="order-detail">📧 {o.customer_email}</div>
+                  <div className="order-detail">📱 {o.customer_phone}</div>
+                  <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
+                  {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
+                  {o.notes && <div className="order-detail">📝 {o.notes}</div>}
+                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}× {item.name}</span>)}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
+                  <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
+                  <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
+                    <option value="new">New</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="ready">Ready</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+            ))}</div>
+      }
     </div>
   );
 }
@@ -835,7 +876,9 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t => <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>)}
+        {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t =>
+          <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
+        )}
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":"MENU MANAGER"}</div>
@@ -871,7 +914,7 @@ function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
-  const { count } = useContext(CartContext);
+  const { count, dispatch } = useContext(CartContext);
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
@@ -895,8 +938,17 @@ function App() {
         </div>
       </nav>
       {page==="menu" && <MenuPage />}
-      {page==="checkout" && <CheckoutPage onBack={() => setPage("menu")} onConfirm={(order) => { setConfirmedOrder(order); setPage("confirmation"); }} />}
-      {page==="confirmation" && confirmedOrder && <ConfirmationPage order={confirmedOrder} onBackToMenu={() => { setPage("menu"); setConfirmedOrder(null); }} />}
+      {page==="checkout" && (
+        <CheckoutPage onBack={() => setPage("menu")} onConfirm={(order) => {
+          setConfirmedOrder(order);
+          dispatch({ type:"CLEAR" });
+          setPage("confirmation");
+          setCartOpen(false);
+        }} />
+      )}
+      {page==="confirmation" && confirmedOrder && (
+        <ConfirmationPage order={confirmedOrder} onBackToMenu={() => { setPage("menu"); setConfirmedOrder(null); }} />
+      )}
       {page==="admin" && (adminUnlocked ? <AdminPage /> : <AdminPinLock onUnlock={() => setAdminUnlocked(true)} />)}
       {cartOpen && (
         <>
