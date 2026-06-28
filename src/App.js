@@ -27,17 +27,18 @@ function CartProvider({ children }) {
   return <CartContext.Provider value={{ cart, dispatch, total, count }}>{children}</CartContext.Provider>;
 }
 
-const INITIAL_MENU = [
-  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{} },
-  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]} },
-  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]} },
-  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]} },
-  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]} },
-  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]} },
+// Fallback menu if Supabase is empty
+const FALLBACK_MENU = [
+  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for Â£3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ ©", bg:"#2d1b69", available:true, options:{}, image_url:null },
+  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for Â£4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ ©", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for Â£4", description:"A box of 4 donuts in your chosen flavour â€” Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ ©", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. Â£3 cold or Â£3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ¥§", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
+  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
+  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
+  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
+  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
+  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"âš ï¸ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing â€” serves 6â€“8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ¥§", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
+  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ ª", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
 ];
 
 const LIVE_DAYS = [5, 6, 0];
@@ -57,14 +58,12 @@ const TIME_SLOTS = generateTimeSlots();
 function fmtDate(d) {
   return d.toLocaleDateString("en-GB", { weekday:"short", month:"short", day:"numeric" });
 }
-
 function getDayType(date) {
   const day = date.getDay();
   if (LIVE_DAYS.includes(day)) return "live";
   if (PREORDER_DAYS.includes(day)) return "preorder";
   return null;
 }
-
 function getAvailableDays(n) {
   const days = [];
   for (let i = 0; i <= 60; i++) {
@@ -79,20 +78,165 @@ function getAvailableDays(n) {
   }
   return days;
 }
-
 function isTodayLive() {
   const now = new Date();
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
 }
-
-// Generate SumUp payment link with exact amount
 function getSumUpPaymentLink(amount, orderId) {
-    return `https://pay.sumup.com/b2c/QZ9ZMUVG?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
-  }
-
-// Generate QR code URL using Google Charts API (free, no key needed)
+  return `https://pay.sumup.com/b2c/QZ9ZMUVG?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
+}
 function getQRCodeUrl(text) {
   return `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(text)}&choe=UTF-8`;
+}
+
+// ============================================================
+// MENU STATE â€” loads from Supabase, falls back to hardcoded
+// Pause state also saved to Supabase store_settings table
+// ============================================================
+const MenuStateContext = createContext();
+function MenuStateProvider({ children }) {
+  const [menuItems, setMenuItems] = useState([]);
+  const [storePaused, setStorePausedState] = useState(false);
+  const [menuLoading, setMenuLoading] = useState(true);
+
+  // Load menu from Supabase on mount
+  useEffect(() => {
+    loadMenuFromSupabase();
+    loadStorePauseState();
+  }, []);
+
+  async function loadMenuFromSupabase() {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (data && data.length > 0) {
+      // Normalise options field â€” could be string or object
+      const normalised = data.map(item => ({
+        ...item,
+        allergens: Array.isArray(item.allergens) ? item.allergens : (item.allergens ? item.allergens.split(",").map(a=>a.trim()) : []),
+        options: typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {}),
+      }));
+      setMenuItems(normalised);
+    } else {
+      // Use fallback and seed Supabase
+      setMenuItems(FALLBACK_MENU);
+      if (!error) seedMenuToSupabase();
+    }
+    setMenuLoading(false);
+  }
+
+  async function seedMenuToSupabase() {
+    for (const item of FALLBACK_MENU) {
+      await supabase.from("menu_items").upsert({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        category: item.category,
+        badge: item.badge || null,
+        allergens: item.allergens,
+        emoji: item.emoji,
+        bg: item.bg,
+        available: item.available,
+        options: item.options,
+        notice: item.notice || null,
+        image_url: null,
+      });
+    }
+  }
+
+  async function loadStorePauseState() {
+    const { data } = await supabase
+      .from("store_settings")
+      .select("value")
+      .eq("key", "store_paused")
+      .single();
+    if (data) setStorePausedState(data.value === "true");
+  }
+
+  async function setStorePaused(paused) {
+    setStorePausedState(paused);
+    await supabase.from("store_settings")
+      .upsert({ key: "store_paused", value: String(paused), updated_at: new Date().toISOString() });
+  }
+
+  async function toggleItem(id) {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) return;
+    const newAvail = !item.available;
+    setMenuItems(items => items.map(i => i.id === id ? {...i, available: newAvail} : i));
+    await supabase.from("menu_items").update({ available: newAvail }).eq("id", id);
+  }
+
+  async function addMenuItem(newItem, imageFile) {
+    let image_url = null;
+    // Upload image if provided
+    if (imageFile) {
+      const ext = imageFile.name.split(".").pop();
+      const filename = `${Date.now()}-${Math.random().toString(36).substr(2,6)}.${ext}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("menu-images")
+        .upload(filename, imageFile, { contentType: imageFile.type, upsert: true });
+      if (!uploadError && uploadData) {
+        const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(filename);
+        image_url = urlData.publicUrl;
+      } else {
+        console.error("Image upload error:", uploadError);
+      }
+    }
+    const id = `custom-${Date.now()}`;
+    const item = { ...newItem, id, image_url, available: true };
+    const { error } = await supabase.from("menu_items").insert({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: parseFloat(item.price),
+      category: item.category,
+      badge: item.badge || null,
+      allergens: item.allergens,
+      emoji: item.emoji || "ðŸ ©",
+      bg: item.bg || "#2d1b69",
+      available: true,
+      options: item.options || {},
+      notice: item.notice || null,
+      image_url,
+    });
+    if (!error) setMenuItems(prev => [...prev, item]);
+    return !error;
+  }
+
+  async function deleteMenuItem(id) {
+    const { error } = await supabase.from("menu_items").delete().eq("id", id);
+    if (!error) setMenuItems(prev => prev.filter(i => i.id !== id));
+    return !error;
+  }
+
+  async function updateMenuItemImage(id, imageFile) {
+    const ext = imageFile.name.split(".").pop();
+    const filename = `${Date.now()}-${id}.${ext}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("menu-images")
+      .upload(filename, imageFile, { contentType: imageFile.type, upsert: true });
+    if (uploadError) { console.error("Upload error:", uploadError); return false; }
+    const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(filename);
+    const image_url = urlData.publicUrl;
+    await supabase.from("menu_items").update({ image_url }).eq("id", id);
+    setMenuItems(items => items.map(i => i.id === id ? {...i, image_url} : i));
+    return true;
+  }
+
+  const availableItems = menuItems.filter(i => i.available);
+
+  return (
+    <MenuStateContext.Provider value={{
+      menuItems, availableItems, toggleItem, menuLoading,
+      storePaused, setStorePaused,
+      addMenuItem, deleteMenuItem, updateMenuItemImage
+    }}>
+      {children}
+    </MenuStateContext.Provider>
+  );
 }
 
 const STYLES = `
@@ -101,7 +245,7 @@ const STYLES = `
   :root {
     --yellow: #f5c542; --yellow-dark: #d4a017;
     --dark: #0f0a1e; --white: #ffffff; --card-bg: #1a1040;
-    --green: #4fa84b; --purple: #2d1b69;
+    --green: #4fa84b; --purple: #2d1b69; --red: #e06060;
   }
   body { background: var(--dark); color: var(--white); font-family: 'Nunito', sans-serif; }
   .app { min-height: 100vh; }
@@ -142,8 +286,10 @@ const STYLES = `
   .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.2rem; }
   .menu-card { border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.25s; border: 2px solid rgba(255,255,255,0.06); background: var(--card-bg); }
   .menu-card:hover { transform: translateY(-5px); border-color: var(--yellow); box-shadow: 0 16px 40px rgba(245,197,66,0.15); }
-  .card-top { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; }
-  .card-badge { position: absolute; top: 0.7rem; right: 0.7rem; background: var(--yellow); color: var(--dark); font-size: 0.68rem; font-weight: 900; padding: 0.2rem 0.6rem; border-radius: 20px; text-transform: uppercase; }
+  .card-top { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
+  .card-top img { width: 100%; height: 100%; object-fit: cover; }
+  .card-top-emoji { position: absolute; font-size: 3.5rem; }
+  .card-badge { position: absolute; top: 0.7rem; right: 0.7rem; background: var(--yellow); color: var(--dark); font-size: 0.68rem; font-weight: 900; padding: 0.2rem 0.6rem; border-radius: 20px; text-transform: uppercase; z-index: 2; }
   .card-body { padding: 1.1rem; }
   .card-name { font-family: 'Bangers', cursive; font-size: 1.25rem; color: var(--white); letter-spacing: 1px; margin-bottom: 0.3rem; }
   .card-desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin-bottom: 0.8rem; }
@@ -161,8 +307,10 @@ const STYLES = `
   .sticky-cart-total { font-weight: 900; font-size: 1.1rem; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; backdrop-filter: blur(6px); animation: fadeIn 0.2s ease; }
   .modal { background: #1a1040; border-radius: 20px; max-width: 460px; width: 100%; border: 2px solid rgba(245,197,66,0.3); box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
-  .modal-top { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; border-radius: 18px 18px 0 0; }
-  .modal-close { position: absolute; top: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: white; }
+  .modal-top { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; border-radius: 18px 18px 0 0; overflow: hidden; }
+  .modal-top img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-top-emoji { position: absolute; font-size: 4rem; }
+  .modal-close { position: absolute; top: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; }
   .modal-close:hover { background: rgba(255,255,255,0.1); }
   .modal-body { padding: 1.5rem; }
   .modal-name { font-family: 'Bangers', cursive; font-size: 1.8rem; color: var(--white); letter-spacing: 2px; margin-bottom: 0.3rem; }
@@ -224,6 +372,7 @@ const STYLES = `
   .form-input { width: 100%; padding: 0.65rem 1rem; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: white; transition: all 0.2s; outline: none; }
   .form-input:focus { border-color: var(--yellow); background: rgba(245,197,66,0.05); }
   .form-input::placeholder { color: rgba(255,255,255,0.2); }
+  .form-select { width: 100%; padding: 0.65rem 1rem; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: white; transition: all 0.2s; outline: none; cursor: pointer; }
   .summary-item { display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.85rem; color: rgba(255,255,255,0.7); }
   .summary-total { display: flex; justify-content: space-between; padding-top: 0.8rem; font-weight: 900; font-size: 1rem; }
   .summary-total span:last-child { color: var(--yellow); }
@@ -232,8 +381,6 @@ const STYLES = `
   .place-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
   .back-nav-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
   .back-nav-btn:hover { color: var(--yellow); border-color: var(--yellow); }
-
-  /* CONFIRMATION */
   .confirmation { max-width: 520px; margin: 2rem auto; padding: 1.5rem; text-align: center; }
   .confirm-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease; }
   .confirm-title { font-family: 'Bangers', cursive; font-size: 2.5rem; color: var(--yellow); letter-spacing: 3px; margin-bottom: 0.5rem; }
@@ -243,8 +390,6 @@ const STYLES = `
   .confirm-row:last-child { border-bottom: none; }
   .confirm-label { color: rgba(255,255,255,0.4); font-weight: 600; }
   .confirm-value { font-weight: 800; color: var(--white); }
-
-  /* PAYMENT SECTION */
   .pay-section { background: #1a1040; border-radius: 16px; padding: 1.5rem; border: 2px solid rgba(245,197,66,0.3); margin-bottom: 1.5rem; text-align: center; }
   .pay-title { font-family: 'Bangers', cursive; font-size: 1.4rem; color: var(--yellow); letter-spacing: 2px; margin-bottom: 0.4rem; }
   .pay-amount { font-size: 2rem; font-weight: 900; color: var(--white); margin-bottom: 1rem; }
@@ -258,11 +403,8 @@ const STYLES = `
   .qr-img { width: 160px; height: 160px; border-radius: 12px; background: white; padding: 8px; }
   .qr-label { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
   .pay-note { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 1rem; line-height: 1.5; }
-
   .back-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; padding: 0.9rem 2.5rem; border-radius: 10px; font-family: 'Bangers', cursive; font-size: 1.2rem; letter-spacing: 2px; }
   .back-btn:hover { color: var(--yellow); border-color: var(--yellow); }
-
-  /* ADMIN */
   .admin-layout { display: flex; min-height: calc(100vh - 64px); }
   .admin-sidebar { width: 210px; background: #0f0a1e; padding: 1.5rem 1rem; border-right: 1px solid rgba(245,197,66,0.15); flex-shrink: 0; }
   .admin-sidebar-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 1rem; padding: 0 0.5rem; }
@@ -298,21 +440,51 @@ const STYLES = `
   .status-confirmed { background: rgba(74,160,70,0.15); color: #4fa84b; }
   .status-ready { background: rgba(74,120,200,0.15); color: #6ea0d4; }
   .status-completed { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); }
-  .status-pending_payment { background: rgba(255,150,50,0.15); color: #ff9650; }
   .status-select { padding: 0.35rem 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); font-family: 'Nunito', sans-serif; font-size: 0.8rem; color: white; cursor: pointer; margin-top: 0.4rem; }
   .order-total-badge { font-weight: 900; font-size: 1.1rem; color: var(--yellow); }
-  .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
-  .admin-menu-card { background: #1a1040; border-radius: 10px; padding: 1rem; border: 1px solid rgba(255,255,255,0.06); display: flex; gap: 0.8rem; align-items: flex-start; }
+
+  /* ADMIN MENU */
+  .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem; }
+  .admin-menu-card { background: #1a1040; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
+  .admin-card-img { height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; overflow: hidden; }
+  .admin-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .admin-card-img-emoji { position: absolute; font-size: 2.5rem; }
+  .admin-card-body { padding: 0.8rem; }
   .admin-card-name { font-weight: 800; font-size: 0.88rem; color: var(--white); margin-bottom: 0.2rem; }
-  .admin-card-price { font-size: 0.82rem; color: var(--yellow); font-weight: 700; }
-  .toggle-avail { margin-top: 0.5rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: none; font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
+  .admin-card-price { font-size: 0.82rem; color: var(--yellow); font-weight: 700; margin-bottom: 0.5rem; }
+  .admin-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .toggle-avail { padding: 0.25rem 0.6rem; border-radius: 6px; border: none; font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
   .toggle-avail.on { background: rgba(74,160,70,0.15); color: #4fa84b; }
   .toggle-avail.off { background: rgba(220,50,50,0.15); color: #e06060; }
+  .upload-img-btn { padding: 0.25rem 0.6rem; border-radius: 6px; border: none; background: rgba(245,197,66,0.12); color: var(--yellow); font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+  .delete-item-btn { padding: 0.25rem 0.6rem; border-radius: 6px; border: none; background: rgba(220,50,50,0.15); color: #e06060; font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+  .hidden-input { display: none; }
+
+  /* ADD ITEM FORM */
+  .add-item-section { background: #1a1040; border-radius: 14px; padding: 1.5rem; border: 1px solid rgba(245,197,66,0.2); margin-bottom: 2rem; }
+  .add-item-title { font-family: 'Bangers', cursive; font-size: 1.2rem; color: var(--yellow); letter-spacing: 2px; margin-bottom: 1rem; }
+  .add-item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  @media (max-width: 600px) { .add-item-grid { grid-template-columns: 1fr; } }
+  .add-item-btn { margin-top: 1rem; padding: 0.8rem 2rem; background: var(--yellow); color: var(--dark); border: none; border-radius: 10px; font-family: 'Bangers', cursive; font-size: 1.1rem; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
+  .add-item-btn:hover { background: var(--yellow-dark); }
+  .add-item-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-top: 0.5rem; }
+  .upload-zone { border: 2px dashed rgba(245,197,66,0.3); border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .upload-zone:hover { border-color: var(--yellow); background: rgba(245,197,66,0.05); }
+  .upload-zone-text { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 0.4rem; }
+
+  /* STORE CLOSED */
   .store-closed-banner { background: rgba(220,50,50,0.12); border-bottom: 2px solid rgba(220,50,50,0.4); padding: 1rem 1.5rem; text-align: center; }
   .store-closed-title { font-family: 'Bangers', cursive; font-size: 1.4rem; color: #e06060; letter-spacing: 2px; margin-bottom: 0.3rem; }
   .store-closed-sub { font-size: 0.85rem; color: rgba(255,255,255,0.4); }
+
+  /* SUCCESS / ERROR TOAST */
+  .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 800; font-size: 0.9rem; z-index: 999; animation: slideUp 0.3s ease; }
+  .toast.success { background: var(--green); color: white; }
+  .toast.error { background: #e06060; color: white; }
+
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
   @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
   @keyframes slideUpCart { from { transform: translateY(100%); } to { transform: translateY(0); } }
   @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
@@ -365,24 +537,20 @@ function playNotificationSound() {
   } catch(e) {}
 }
 
-const MenuStateContext = createContext();
-function MenuStateProvider({ children }) {
-  const [menuItems, setMenuItems] = useState(INITIAL_MENU);
-  const [storePaused, setStorePaused] = useState(false);
-  const toggleItem = (id) => setMenuItems(items => items.map(i => i.id === id ? {...i, available: !i.available} : i));
-  const availableItems = menuItems.filter(i => i.available);
-  return (
-    <MenuStateContext.Provider value={{ menuItems, availableItems, toggleItem, storePaused, setStorePaused }}>
-      {children}
-    </MenuStateContext.Provider>
-  );
+// Toast notification
+function Toast({ msg, type }) {
+  if (!msg) return null;
+  return <div className={`toast ${type}`}>{msg}</div>;
 }
 
 function MenuCard({ item, onOpen }) {
   return (
     <div className="menu-card" onClick={() => onOpen(item)}>
       <div className="card-top" style={{ background:`${item.bg}cc` }}>
-        <span>{item.emoji}</span>
+        {item.image_url
+          ? <img src={item.image_url} alt={item.name} />
+          : <span className="card-top-emoji">{item.emoji}</span>
+        }
         {item.badge && <span className="card-badge">{item.badge}</span>}
       </div>
       <div className="card-body">
@@ -391,8 +559,8 @@ function MenuCard({ item, onOpen }) {
         <div className="card-desc">{item.description}</div>
         <div className="card-footer">
           <div>
-            <div className="card-price">from £{item.price.toFixed(2)}</div>
-            <div className="card-allergens">Contains: {item.allergens.join(", ")}</div>
+            <div className="card-price">from Â£{parseFloat(item.price).toFixed(2)}</div>
+            <div className="card-allergens">Contains: {Array.isArray(item.allergens) ? item.allergens.join(", ") : item.allergens}</div>
           </div>
           <button className="add-btn" onClick={e => { e.stopPropagation(); onOpen(item); }}>Add +</button>
         </div>
@@ -404,24 +572,31 @@ function MenuCard({ item, onOpen }) {
 function ProductModal({ item, onClose, onAdd }) {
   const [options, setOptions] = useState(() => {
     const d = {};
-    if (item.options) Object.keys(item.options).forEach(k => d[k] = item.options[k][0]);
+    const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
+    Object.keys(opts).forEach(k => d[k] = opts[k][0]);
     return d;
   });
-  const price = (options["How would you like it?"] || "").includes("£3.50") ? 3.50 : item.price;
+  const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
+  const price = (options["How would you like it?"] || "").includes("Â£3.50") ? 3.50 : parseFloat(item.price);
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-top" style={{ background:`${item.bg}dd` }}>
-          <span style={{ fontSize:"4rem" }}>{item.emoji}</span>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          {item.image_url
+            ? <img src={item.image_url} alt={item.name} />
+            : <span className="modal-top-emoji">{item.emoji}</span>
+          }
+          <button className="modal-close" onClick={onClose}>âœ•</button>
         </div>
         <div className="modal-body">
           <div className="modal-name">{item.name}</div>
-          <div className="modal-price">£{price.toFixed(2)}</div>
+          <div className="modal-price">Â£{price.toFixed(2)}</div>
           {item.notice && <div className="notice-banner">{item.notice}</div>}
           <div className="modal-desc">{item.description}</div>
-          <div style={{ marginBottom:"0.5rem" }}>{item.allergens.map(a => <span key={a} className="allergen-tag">{a}</span>)}</div>
-          {item.options && Object.entries(item.options).map(([key,vals]) => (
+          <div style={{ marginBottom:"0.5rem" }}>
+            {(Array.isArray(item.allergens) ? item.allergens : (item.allergens||"").split(",")).map(a => <span key={a} className="allergen-tag">{a.trim()}</span>)}
+          </div>
+          {opts && Object.entries(opts).map(([key,vals]) => (
             <div key={key} className="option-group">
               <div className="option-label">{key}</div>
               <div className="option-pills">
@@ -429,7 +604,7 @@ function ProductModal({ item, onClose, onAdd }) {
               </div>
             </div>
           ))}
-          <button className="modal-add-btn" onClick={() => { onAdd({...item,price}, options); onClose(); }}>ADD TO ORDER — £{price.toFixed(2)}</button>
+          <button className="modal-add-btn" onClick={() => { onAdd({...item, price}, options); onClose(); }}>ADD TO ORDER â€” Â£{price.toFixed(2)}</button>
         </div>
       </div>
     </div>
@@ -442,20 +617,20 @@ function CartDrawer({ onClose, onCheckout }) {
     <div className="cart-drawer">
       <div className="drawer-header">
         <div className="drawer-title">YOUR ORDER {count > 0 && `(${count})`}</div>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={onClose}>âœ•</button>
       </div>
       <div className="drawer-items">
         {cart.length === 0 ? (
-          <div className="empty-cart"><div className="empty-cart-emoji">🛒</div><div style={{fontWeight:700}}>Nothing added yet!</div><div style={{fontSize:"0.82rem",marginTop:"0.4rem"}}>Browse the menu and add your faves.</div></div>
+          <div className="empty-cart"><div className="empty-cart-emoji">ðŸ›’</div><div style={{fontWeight:700}}>Nothing added yet!</div><div style={{fontSize:"0.82rem",marginTop:"0.4rem"}}>Browse the menu and add your faves.</div></div>
         ) : cart.map((item,idx) => (
           <div key={idx} className="cart-item">
             <div className="cart-item-emoji">{item.emoji}</div>
             <div className="cart-item-info">
               <div className="cart-item-name">{item.name}</div>
-              {item.options && <div className="cart-item-opts">{Object.values(item.options).join(" · ")}</div>}
-              <div className="cart-item-price">£{(item.price * item.qty).toFixed(2)}</div>
+              {item.options && <div className="cart-item-opts">{Object.values(item.options).join(" Â· ")}</div>}
+              <div className="cart-item-price">Â£{(item.price * item.qty).toFixed(2)}</div>
               <div className="qty-controls">
-                <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty-1})}>−</button>
+                <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty-1})}>âˆ’</button>
                 <span className="qty-num">{item.qty}</span>
                 <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty+1})}>+</button>
               </div>
@@ -465,8 +640,8 @@ function CartDrawer({ onClose, onCheckout }) {
       </div>
       {cart.length > 0 && (
         <div className="drawer-footer">
-          <div className="drawer-total"><span>Total</span><span>£{total.toFixed(2)}</span></div>
-          <button className="checkout-btn" onClick={onCheckout}>CHECKOUT →</button>
+          <div className="drawer-total"><span>Total</span><span>Â£{total.toFixed(2)}</span></div>
+          <button className="checkout-btn" onClick={onCheckout}>CHECKOUT â†’</button>
         </div>
       )}
     </div>
@@ -475,66 +650,68 @@ function CartDrawer({ onClose, onCheckout }) {
 
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
-  const { availableItems, storePaused } = useContext(MenuStateContext);
+  const { availableItems, storePaused, menuLoading } = useContext(MenuStateContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
   const tabs = [
-    { id:"all", label:"🍽️ Everything" },
-    { id:"donut", label:"🍩 Donuts" },
-    { id:"cookie_pie", label:"🥧 Cookie Pies" },
-    { id:"cookie_cup", label:"🍪 Cookie Cups" },
+    { id:"all", label:"ðŸ ½ï¸ Everything" },
+    { id:"donut", label:"ðŸ © Donuts" },
+    { id:"cookie_pie", label:"ðŸ¥§ Cookie Pies" },
+    { id:"cookie_cup", label:"ðŸ ª Cookie Cups" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
   return (
     <>
       {storePaused && (
         <div className="store-closed-banner">
-          <div className="store-closed-title">🔴 NOT TAKING ORDERS RIGHT NOW</div>
-          <div className="store-closed-sub">We'll be back soon — check our socials for updates</div>
+          <div className="store-closed-title">ðŸ”´ NOT TAKING ORDERS RIGHT NOW</div>
+          <div className="store-closed-sub">We'll be back soon â€” check our socials for updates</div>
         </div>
       )}
       <div className={`status-banner ${todayLive && !storePaused ? "open" : "closed"}`}>
-        {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
+        {todayLive && !storePaused ? "ðŸŸ¢ We're OPEN â€” order for collection or delivery today!" : "â ° Pre-orders welcome â€” we're open Friday, Saturday & Sunday 1pmâ€“11pm"}
       </div>
       <div className="hero">
-        <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
+        <div className="hero-badge">ðŸ”¥ Fresh Made to Order Â· Walsall</div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={110} /></div>
         <h1>TEE<span>BAKES</span></h1>
         <div className="hero-sub">Specialty Bakes</div>
-        <p>Fresh fried donuts and warm gooey cookie pies. Order for collection or delivery — Friday, Saturday & Sunday 1pm–11pm.</p>
+        <p>Fresh fried donuts and warm gooey cookie pies. Order for collection or delivery â€” Friday, Saturday & Sunday 1pmâ€“11pm.</p>
         <div className="hero-pills">
-          <span className="hero-pill">🍩 Loaded Donuts</span>
-          <span className="hero-pill">🥧 Cookie Pies</span>
-          <span className="hero-pill">🍪 Cookie Cups</span>
-          <span className="hero-pill">🚗 Delivery Available</span>
+          <span className="hero-pill">ðŸ © Loaded Donuts</span>
+          <span className="hero-pill">ðŸ¥§ Cookie Pies</span>
+          <span className="hero-pill">ðŸ ª Cookie Cups</span>
+          <span className="hero-pill">ðŸš— Delivery Available</span>
         </div>
       </div>
       <div style={{maxWidth:"1100px",margin:"1.5rem auto 0",padding:"0 1.5rem"}}>
         <div className="hours-info">
-          <div className="hours-info-title">🕐 OPENING HOURS</div>
-          <div className="hours-row open-day"><span>Friday</span><span>1:00pm – 11:00pm ✅</span></div>
-          <div className="hours-row open-day"><span>Saturday</span><span>1:00pm – 11:00pm ✅</span></div>
-          <div className="hours-row open-day"><span>Sunday</span><span>1:00pm – 11:00pm ✅</span></div>
-          <div className="hours-row"><span>Monday – Thursday</span><span>Pre-order only (24hr notice)</span></div>
-          <div className="hours-row"><span>Delivery fee</span><span>£2.50 · Min order £10 (delivery only)</span></div>
-          <div className="hours-row"><span>Whole pies</span><span>⚠️ 24hr notice required</span></div>
+          <div className="hours-info-title">ðŸ• OPENING HOURS</div>
+          <div className="hours-row open-day"><span>Friday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
+          <div className="hours-row open-day"><span>Saturday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
+          <div className="hours-row open-day"><span>Sunday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
+          <div className="hours-row"><span>Monday â€“ Thursday</span><span>Pre-order only (24hr notice)</span></div>
+          <div className="hours-row"><span>Delivery fee</span><span>Â£2.50 Â· Min order Â£10 (delivery only)</span></div>
+          <div className="hours-row"><span>Whole pies</span><span>âš ï¸ 24hr notice required</span></div>
         </div>
       </div>
       <div className="cat-tabs">
         {tabs.map(t => <button key={t.id} className={`cat-tab ${activeTab===t.id?"active":""}`} onClick={() => setActiveTab(t.id)}>{t.label}</button>)}
       </div>
       <div className="page" style={{paddingBottom:count>0?"5rem":"1.5rem"}}>
-        {filtered.length === 0
-          ? <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
-          : <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
+        {menuLoading
+          ? <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.4)"}}>Loading menu...</div>
+          : filtered.length === 0
+            ? <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
+            : <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
         }
       </div>
       {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} onAdd={(item,options) => dispatch({type:"ADD",item:{...item,options}})} />}
       {count > 0 && (
         <div className="sticky-cart" onClick={() => window.dispatchEvent(new CustomEvent("openCart"))}>
           <div className="sticky-cart-left"><div className="sticky-cart-count">{count}</div><div className="sticky-cart-text">View your order</div></div>
-          <div className="sticky-cart-total">£{total.toFixed(2)} →</div>
+          <div className="sticky-cart-total">Â£{total.toFixed(2)} â†’</div>
         </div>
       )}
     </>
@@ -564,56 +741,35 @@ function CheckoutPage({ onBack, onConfirm }) {
     setSubmitting(true);
     const orderId = "TB-" + Math.random().toString(36).substr(2,6).toUpperCase();
     const timeLabel = asap ? "ASAP" : selTime;
-
-    // Save to Supabase
     const { error } = await supabase.from("orders").insert({
-      id: orderId,
-      customer_name: form.name,
-      customer_email: form.email,
-      customer_phone: form.phone,
-      items: cart,
-      total: orderTotal,
-      type,
-      delivery_address: form.address || null,
-      date: selDateLabel,
-      time: timeLabel,
-      payment_method: "sumup",
-      order_status: "new",
-      notes: form.notes || null,
+      id: orderId, customer_name: form.name, customer_email: form.email,
+      customer_phone: form.phone, items: cart, total: orderTotal, type,
+      delivery_address: form.address || null, date: selDateLabel, time: timeLabel,
+      payment_method: "sumup", order_status: "new", notes: form.notes || null,
     });
     if (error) console.error("Supabase error:", error);
-
-    // Send email notification
     try {
       await fetch("https://api.web3forms.com/submit", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
-          subject: `📦 New TeeBakes Order — ${orderId}`,
+          subject: `ðŸ“¦ New TeeBakes Order â€” ${orderId}`,
           name: form.name, email: form.email,
-          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
+          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: Â£${orderTotal.toFixed(2)}`
         })
       });
     } catch(e) { console.error("Email error:", e); }
-
     setSubmitting(false);
-    onConfirm({
-      orderId, ...form, type,
-      date: selDateLabel,
-      time: timeLabel,
-      isAsap: asap,
-      items: cart,
-      total: orderTotal
-    });
+    onConfirm({ orderId, ...form, type, date: selDateLabel, time: timeLabel, isAsap: asap, items: cart, total: orderTotal });
   }
 
   if (storePaused) {
     return (
       <div className="page" style={{textAlign:"center",padding:"4rem 1.5rem"}}>
-        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔴</div>
+        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>ðŸ”´</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"2rem",color:"#e06060",letterSpacing:"2px",marginBottom:"0.5rem"}}>NOT TAKING ORDERS</div>
         <div style={{color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>We're not accepting orders right now. Check back soon!</div>
-        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
+        <button className="back-nav-btn" onClick={onBack}>â† Back to Menu</button>
       </div>
     );
   }
@@ -621,31 +777,30 @@ function CheckoutPage({ onBack, onConfirm }) {
   return (
     <div className="page">
       <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.5rem"}}>
-        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
+        <button className="back-nav-btn" onClick={onBack}>â† Back to Menu</button>
         <h2 style={{fontFamily:"'Bangers',cursive",fontSize:"1.6rem",color:"var(--yellow)",letterSpacing:"2px"}}>CHECKOUT</h2>
       </div>
       <div className="checkout-grid">
         <div>
           <div className="co-section">
-            <div className="co-title">📦 COLLECTION OR DELIVERY?</div>
+            <div className="co-title">ðŸ“¦ COLLECTION OR DELIVERY?</div>
             <div className="type-toggle">
-              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); }}>🏪 Collection</button>
-              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); }}>🚗 Delivery (+£2.50)</button>
+              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); }}>ðŸ ª Collection</button>
+              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); }}>ðŸš— Delivery (+Â£2.50)</button>
             </div>
-            <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>📅 PICK A DATE</div>
+            <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>ðŸ“… PICK A DATE</div>
             <div className="date-grid">
               {availableDays.map(day => (
                 <button key={day.label} className={`date-btn ${day.type==="live"?"live-day":""} ${selDateLabel===day.label?"selected":""}`} onClick={() => selectDate(day)}>
-                  {day.label}
-                  <div className="date-btn-sub">{day.type==="live"?"🟢 Open":"📅 Pre-order"}</div>
+                  {day.label}<div className="date-btn-sub">{day.type==="live"?"ðŸŸ¢ Open":"ðŸ“… Pre-order"}</div>
                 </button>
               ))}
             </div>
-            {selDayType === "preorder" && <div className="preorder-notice">📋 <strong>Pre-order day</strong> — your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
+            {selDayType === "preorder" && <div className="preorder-notice">ðŸ“‹ <strong>Pre-order day</strong> â€” your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
             {selDateLabel && (
               <>
-                <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>⏰ PICK A TIME</div>
-                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>⚡ Collection ASAP — I'll be there soon!</button>}
+                <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>â ° PICK A TIME</div>
+                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>âš¡ Collection ASAP â€” I'll be there soon!</button>}
                 <div className="time-grid">
                   {TIME_SLOTS.map(t => <button key={t} className={`time-btn ${selTime===t?"selected":""}`} onClick={() => { setSelTime(t); setAsap(false); }}>{t}</button>)}
                 </div>
@@ -653,7 +808,7 @@ function CheckoutPage({ onBack, onConfirm }) {
             )}
           </div>
           <div className="co-section">
-            <div className="co-title">👤 YOUR DETAILS</div>
+            <div className="co-title">ðŸ‘¤ YOUR DETAILS</div>
             {[{k:"name",l:"Full Name",p:"Your name"},{k:"email",l:"Email",p:"email@example.com"},{k:"phone",l:"Phone",p:"+44 7700 000000"}].map(f => (
               <div key={f.k} className="form-group">
                 <label className="form-label">{f.l}</label>
@@ -672,9 +827,9 @@ function CheckoutPage({ onBack, onConfirm }) {
             </div>
           </div>
           <div className="co-section">
-            <div className="co-title">💳 PAYMENT</div>
+            <div className="co-title">ðŸ’³ PAYMENT</div>
             <div style={{background:"rgba(245,197,66,0.07)",border:"2px solid rgba(245,197,66,0.3)",borderRadius:"10px",padding:"1rem",display:"flex",alignItems:"center",gap:"1rem"}}>
-              <div style={{fontSize:"1.5rem"}}>💳</div>
+              <div style={{fontSize:"1.5rem"}}>ðŸ’³</div>
               <div>
                 <div style={{fontWeight:800,fontSize:"0.9rem",color:"var(--white)"}}>Pay by Card via SumUp</div>
                 <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>You'll be shown a secure payment link after placing your order</div>
@@ -684,18 +839,18 @@ function CheckoutPage({ onBack, onConfirm }) {
         </div>
         <div>
           <div className="co-section" style={{position:"sticky",top:"80px"}}>
-            <div className="co-title">🧾 ORDER SUMMARY</div>
-            {cart.map((item,idx) => <div key={idx} className="summary-item"><span>{item.qty}× {item.name}</span><span>£{(item.price*item.qty).toFixed(2)}</span></div>)}
-            {type === "delivery" && <div className="summary-item"><span>Delivery fee</span><span>£2.50</span></div>}
-            <div className="summary-total"><span>Total</span><span>£{orderTotal.toFixed(2)}</span></div>
+            <div className="co-title">ðŸ§¾ ORDER SUMMARY</div>
+            {cart.map((item,idx) => <div key={idx} className="summary-item"><span>{item.qty}Ã— {item.name}</span><span>Â£{(item.price*item.qty).toFixed(2)}</span></div>)}
+            {type === "delivery" && <div className="summary-item"><span>Delivery fee</span><span>Â£2.50</span></div>}
+            <div className="summary-total"><span>Total</span><span>Â£{orderTotal.toFixed(2)}</span></div>
             {selDateLabel && (asap || selTime) && (
               <div style={{marginTop:"1rem",padding:"0.8rem",background:"rgba(245,197,66,0.07)",borderRadius:"8px",fontSize:"0.82rem",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(245,197,66,0.2)"}}>
-                📅 {selDateLabel} {asap?"— ASAP ⚡":`at ${selTime}`}<br />
-                {type==="collection"?"🏪 Collection":"🚗 Delivery"}
-                {selDayType==="preorder" && <><br />📋 Pre-order — we'll confirm by email</>}
+                ðŸ“… {selDateLabel} {asap?"â€” ASAP âš¡":`at ${selTime}`}<br />
+                {type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"}
+                {selDayType==="preorder" && <><br />ðŸ“‹ Pre-order â€” we'll confirm by email</>}
               </div>
             )}
-            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER →"}</button>
+            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER â†’"}</button>
             {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
           </div>
         </div>
@@ -707,61 +862,47 @@ function CheckoutPage({ onBack, onConfirm }) {
 function ConfirmationPage({ order, onBackToMenu }) {
   const paymentLink = getSumUpPaymentLink(order.total, order.orderId);
   const qrUrl = getQRCodeUrl(paymentLink);
-
   return (
     <div className="confirmation">
-      <div className="confirm-icon">🎉</div>
+      <div className="confirm-icon">ðŸŽ‰</div>
       <div className="confirm-title">ORDER PLACED!</div>
       <div className="confirm-sub">
         Thanks {order.name.split(" ")[0]}! Your order is confirmed.<br />
         <span style={{color:"var(--yellow)",fontWeight:700}}>Now complete your payment below to secure it.</span>
       </div>
-
       <div className="confirm-card">
-        {[
-          ["Order ID", order.orderId],
-          ["Type", order.type==="collection"?"🏪 Collection":"🚗 Delivery"],
-          ["Date", order.date],
-          ["Time", order.isAsap?"⚡ ASAP":order.time],
-          ["Total", `£${order.total.toFixed(2)}`],
-        ].map(([l,v]) => (
+        {[["Order ID",order.orderId],["Type",order.type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"],["Date",order.date],["Time",order.isAsap?"âš¡ ASAP":order.time],["Total",`Â£${order.total.toFixed(2)}`]].map(([l,v]) => (
           <div key={l} className="confirm-row"><span className="confirm-label">{l}</span><span className="confirm-value">{v}</span></div>
         ))}
       </div>
-
-      {/* PAYMENT SECTION */}
       <div className="pay-section">
-        <div className="pay-title">💳 COMPLETE PAYMENT</div>
-        <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
-        <div style={{fontSize:"0.82rem", color:"#666", margin:"12px 0", textAlign:"center"}}>
-  When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
-</div>
+        <div className="pay-title">ðŸ’³ COMPLETE PAYMENT</div>
+        <div className="pay-amount">Â£<span>{order.total.toFixed(2)}</span></div>
+        <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
+          When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
+        </div>
         <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
-        PAY £{order.total.toFixed(2)} ON SUMUP →
+          PAY Â£{order.total.toFixed(2)} ON SUMUP â†’
         </a>
-
         <div className="pay-divider">
           <div className="pay-divider-line"></div>
           <div className="pay-divider-text">OR SCAN QR CODE</div>
           <div className="pay-divider-line"></div>
         </div>
-
         <div className="qr-wrap">
           <img src={qrUrl} alt="Scan to pay" className="qr-img" />
           <div className="qr-label">Scan with your phone camera to pay</div>
         </div>
-
-        <div className="pay-note">
-          🔒 Secure payment powered by SumUp<br />
-          Your order reference: {order.orderId}
-        </div>
+        <div className="pay-note">ðŸ”’ Secure payment powered by SumUp<br />Your order reference: {order.orderId}</div>
       </div>
-
-      <button className="back-btn" onClick={onBackToMenu}>ORDER MORE 🍩</button>
+      <button className="back-btn" onClick={onBackToMenu}>ORDER MORE ðŸ ©</button>
     </div>
   );
 }
 
+// ============================================================
+// ADMIN DASHBOARD
+// ============================================================
 function AdminDashboard({ storePaused, setStorePaused }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -772,7 +913,11 @@ function AdminDashboard({ storePaused, setStorePaused }) {
 
   async function loadOrders() {
     const { data, error } = await supabase.from("orders").select("*").order("created_at",{ascending:false});
-    if (data) { if (prevCount.current>0&&data.length>prevCount.current) playNotificationSound(); prevCount.current=data.length; setOrders(data); }
+    if (data) {
+      if (prevCount.current>0&&data.length>prevCount.current) playNotificationSound();
+      prevCount.current=data.length;
+      setOrders(data);
+    }
     if (error) console.error(error);
     setLoading(false);
   }
@@ -782,23 +927,27 @@ function AdminDashboard({ storePaused, setStorePaused }) {
     setOrders(os => os.map(o => o.id===id?{...o,order_status:status}:o));
   }
 
+  async function handlePauseToggle() {
+    await setStorePaused(!storePaused);
+  }
+
   const filtered = filter==="all" ? orders : orders.filter(o => o.order_status===filter);
 
   return (
     <div>
       <div className={`pause-banner ${storePaused?"":"open-state"}`}>
         <div>
-          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED" : "🟢 Store is OPEN — accepting orders"}</div>
-          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Toggle to pause or resume instantly</div>
+          <div className="pause-banner-text">{storePaused ? "ðŸ”´ Orders are PAUSED â€” customers cannot order" : "ðŸŸ¢ Store is OPEN â€” accepting orders"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Saved permanently â€” survives page refresh</div>
         </div>
-        <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={() => setStorePaused(!storePaused)}>
-          {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
+        <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={handlePauseToggle}>
+          {storePaused ? "â–¶ Resume Orders" : "â ¸ Pause Orders"}
         </button>
       </div>
       <div className="stats-grid">
         {[
           {label:"Total Orders",value:orders.length,sub:`${orders.filter(o=>o.order_status==="new").length} new`},
-          {label:"Revenue",value:`£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},
+          {label:"Revenue",value:`Â£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},
           {label:"Collections",value:orders.filter(o=>o.type==="collection").length,sub:"total"},
           {label:"Deliveries",value:orders.filter(o=>o.type==="delivery").length,sub:"total"},
         ].map(s => (
@@ -813,21 +962,21 @@ function AdminDashboard({ storePaused, setStorePaused }) {
       {loading
         ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading orders...</div>
         : filtered.length===0
-          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet 👀</div>
+          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet ðŸ‘€</div>
           : <div className="orders-list">{filtered.map(o => (
               <div key={o.id} className="order-card">
                 <div>
                   <div className="order-id">{o.id}</div>
                   <div className="order-name">{o.customer_name}</div>
-                  <div className="order-detail">📧 {o.customer_email}</div>
-                  <div className="order-detail">📱 {o.customer_phone}</div>
-                  <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
-                  {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
-                  {o.notes && <div className="order-detail">📝 {o.notes}</div>}
-                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}× {item.name}</span>)}</div>
+                  <div className="order-detail">ðŸ“§ {o.customer_email}</div>
+                  <div className="order-detail">ðŸ“± {o.customer_phone}</div>
+                  <div className="order-detail">{o.type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"} Â· {o.date} at {o.time}</div>
+                  {o.delivery_address && <div className="order-detail">ðŸ“ {o.delivery_address}</div>}
+                  {o.notes && <div className="order-detail">ðŸ“ {o.notes}</div>}
+                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}Ã— {item.name}</span>)}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
+                  <div className="order-total-badge">Â£{(o.total||0).toFixed(2)}</div>
                   <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
                   <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
                     <option value="new">New</option>
@@ -843,23 +992,154 @@ function AdminDashboard({ storePaused, setStorePaused }) {
   );
 }
 
+// ============================================================
+// ADMIN MENU â€” with Add Item, Upload Image, Delete
+// ============================================================
 function AdminMenu() {
-  const { menuItems, toggleItem } = useContext(MenuStateContext);
+  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage } = useContext(MenuStateContext);
+  const [toast, setToast] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [newItem, setNewItem] = useState({
+    name:"", price:"", category:"donut", description:"",
+    allergens:"gluten, eggs, dairy", emoji:"ðŸ ©", badge:"", bg:"#2d1b69",
+  });
+
+  function showToast(msg, type="success") {
+    setToast({msg,type});
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  function handleImagePick(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  async function handleAddItem() {
+    if (!newItem.name || !newItem.price) return showToast("Name and price required", "error");
+    setAdding(true);
+    const itemToAdd = {
+      ...newItem,
+      price: parseFloat(newItem.price),
+      allergens: newItem.allergens.split(",").map(a=>a.trim()),
+      options: {},
+    };
+    const ok = await addMenuItem(itemToAdd, imageFile);
+    if (ok) {
+      showToast("âœ… Item added successfully!");
+      setNewItem({ name:"", price:"", category:"donut", description:"", allergens:"gluten, eggs, dairy", emoji:"ðŸ ©", badge:"", bg:"#2d1b69" });
+      setImageFile(null);
+      setImagePreview(null);
+    } else {
+      showToast("â Œ Failed to add item", "error");
+    }
+    setAdding(false);
+  }
+
+  async function handleDelete(id, name) {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    const ok = await deleteMenuItem(id);
+    ok ? showToast(`ðŸ—‘ï¸ "${name}" deleted`) : showToast("â Œ Delete failed", "error");
+  }
+
+  async function handleImageUpload(id, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    showToast("Uploading image...");
+    const ok = await updateMenuItemImage(id, file);
+    ok ? showToast("âœ… Image updated!") : showToast("â Œ Upload failed", "error");
+  }
+
+  const cats = [{id:"donut",label:"ðŸ © Donuts"},{id:"cookie_pie",label:"ðŸ¥§ Cookie Pies"},{id:"cookie_cup",label:"ðŸ ª Cookie Cups"}];
+
   return (
     <div>
-      {[{id:"donut",label:"🍩 Donuts"},{id:"cookie_pie",label:"🥧 Cookie Pies"},{id:"cookie_cup",label:"🍪 Cookie Cups"}].map(cat => (
+      {toast && <Toast msg={toast.msg} type={toast.type} />}
+
+      {/* ADD NEW ITEM */}
+      <div className="add-item-section">
+        <div className="add-item-title">âž• ADD NEW MENU ITEM</div>
+        <div className="add-item-grid">
+          <div className="form-group">
+            <label className="form-label">Item Name *</label>
+            <input className="form-input" placeholder="e.g. Kinder Donut Box" value={newItem.name} onChange={e => setNewItem(p=>({...p,name:e.target.value}))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Price (Â£) *</label>
+            <input className="form-input" type="number" step="0.50" placeholder="3.00" value={newItem.price} onChange={e => setNewItem(p=>({...p,price:e.target.value}))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Category</label>
+            <select className="form-select" value={newItem.category} onChange={e => setNewItem(p=>({...p,category:e.target.value}))}>
+              <option value="donut">ðŸ © Donut</option>
+              <option value="cookie_pie">ðŸ¥§ Cookie Pie</option>
+              <option value="cookie_cup">ðŸ ª Cookie Cup</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Emoji</label>
+            <input className="form-input" placeholder="ðŸ ©" value={newItem.emoji} onChange={e => setNewItem(p=>({...p,emoji:e.target.value}))} />
+          </div>
+          <div className="form-group" style={{gridColumn:"1/-1"}}>
+            <label className="form-label">Description</label>
+            <input className="form-input" placeholder="Describe the item..." value={newItem.description} onChange={e => setNewItem(p=>({...p,description:e.target.value}))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Allergens (comma separated)</label>
+            <input className="form-input" placeholder="gluten, eggs, dairy" value={newItem.allergens} onChange={e => setNewItem(p=>({...p,allergens:e.target.value}))} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Badge (optional)</label>
+            <input className="form-input" placeholder="e.g. New, Hot, Fan Fave" value={newItem.badge} onChange={e => setNewItem(p=>({...p,badge:e.target.value}))} />
+          </div>
+        </div>
+
+        {/* IMAGE UPLOAD */}
+        <div className="form-group" style={{marginTop:"0.5rem"}}>
+          <label className="form-label">Product Photo (optional)</label>
+          <label className="upload-zone" style={{display:"block",cursor:"pointer"}}>
+            <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={handleImagePick} />
+            {imagePreview
+              ? <img src={imagePreview} alt="Preview" className="img-preview" />
+              : <><div style={{fontSize:"2rem"}}>ðŸ“¸</div><div className="upload-zone-text">Tap to take a photo or choose from camera roll</div></>
+            }
+          </label>
+        </div>
+
+        <button className="add-item-btn" onClick={handleAddItem} disabled={adding}>
+          {adding ? "ADDING..." : "âž• ADD TO MENU"}
+        </button>
+      </div>
+
+      {/* EXISTING ITEMS */}
+      {cats.map(cat => (
         <div key={cat.id} style={{marginBottom:"2rem"}}>
           <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.1rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.8rem"}}>{cat.label}</div>
           <div className="admin-menu-grid">
             {menuItems.filter(i => i.category===cat.id).map(item => (
-              <div key={item.id} className="admin-menu-card" style={{opacity:item.available?1:0.5}}>
-                <span style={{fontSize:"1.8rem"}}>{item.emoji}</span>
-                <div>
+              <div key={item.id} className="admin-menu-card" style={{opacity:item.available?1:0.6}}>
+                <div className="admin-card-img" style={{background:`${item.bg}cc`}}>
+                  {item.image_url
+                    ? <img src={item.image_url} alt={item.name} />
+                    : <span className="admin-card-img-emoji">{item.emoji}</span>
+                  }
+                </div>
+                <div className="admin-card-body">
                   <div className="admin-card-name">{item.name}</div>
-                  <div className="admin-card-price">from £{item.price.toFixed(2)}</div>
-                  <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggleItem(item.id)}>
-                    {item.available?"● Available":"✗ Hidden from customers"}
-                  </button>
+                  <div className="admin-card-price">Â£{parseFloat(item.price).toFixed(2)}</div>
+                  <div className="admin-card-actions">
+                    <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggleItem(item.id)}>
+                      {item.available?"â— Available":"âœ— Hidden"}
+                    </button>
+                    <label className="upload-img-btn" style={{cursor:"pointer"}}>
+                      ðŸ“¸ Photo
+                      <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={e => handleImageUpload(item.id, e)} />
+                    </label>
+                    <button className="delete-item-btn" onClick={() => handleDelete(item.id, item.name)}>ðŸ—‘ï¸ Delete</button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -877,7 +1157,7 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t =>
+        {[{id:"orders",label:"ðŸ“‹ Orders"},{id:"menu",label:"ðŸ © Menu"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
       </div>
@@ -898,12 +1178,12 @@ function AdminPinLock({ onUnlock }) {
   return (
     <div style={{minHeight:"100vh",background:"var(--dark)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"#1a1040",borderRadius:"20px",padding:"2.5rem",border:"2px solid rgba(245,197,66,0.3)",width:"320px",textAlign:"center"}}>
-        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔒</div>
+        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>ðŸ”’</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.8rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.5rem"}}>ADMIN ACCESS</div>
         <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem",marginBottom:"1.5rem"}}>Enter your PIN to continue</div>
-        <input type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="••••"
+        <input type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="â€¢â€¢â€¢â€¢"
           style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:`2px solid ${error?"#e06060":"rgba(255,255,255,0.15)"}`,background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1.5rem",letterSpacing:"0.5rem",outline:"none",marginBottom:"1rem"}} />
-        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>❌ Wrong PIN, try again</div>}
+        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>â Œ Wrong PIN, try again</div>}
         <button onClick={handleSubmit} style={{width:"100%",padding:"0.9rem",background:"var(--yellow)",color:"var(--dark)",border:"none",borderRadius:"10px",cursor:"pointer",fontFamily:"'Bangers',cursive",fontSize:"1.2rem",letterSpacing:"2px"}}>UNLOCK</button>
       </div>
     </div>
@@ -919,7 +1199,7 @@ function App() {
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
-  useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Walsall"; }, []);
+  useEffect(() => { document.title = "TeeBakes â€” Fresh Donuts & Cookie Pies | Walsall"; }, []);
 
   return (
     <div className="app">
@@ -935,7 +1215,7 @@ function App() {
         <div className="nav-actions">
           <button className={`nav-btn ${page==="menu"?"active":""}`} onClick={() => setPage("menu")}>Menu</button>
           {showAdminBtn && <button className={`nav-btn ${page==="admin"?"active":""}`} onClick={() => setPage("admin")}>Admin</button>}
-          {page !== "admin" && <button className="cart-btn" onClick={() => setCartOpen(true)}>🛒 Cart {count>0&&<span className="cart-badge">{count}</span>}</button>}
+          {page !== "admin" && <button className="cart-btn" onClick={() => setCartOpen(true)}>ðŸ›’ Cart {count>0&&<span className="cart-badge">{count}</span>}</button>}
         </div>
       </nav>
       {page==="menu" && <MenuPage />}
