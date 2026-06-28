@@ -29,16 +29,16 @@ function CartProvider({ children }) {
 
 // Fallback menu if Supabase is empty
 const FALLBACK_MENU = [
-  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for Â£3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ ©", bg:"#2d1b69", available:true, options:{}, image_url:null },
-  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for Â£4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ ©", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]}, image_url:null },
-  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for Â£4", description:"A box of 4 donuts in your chosen flavour â€” Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ ©", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]}, image_url:null },
-  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. Â£3 cold or Â£3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ¥§", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
-  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
-  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
-  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
-  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"ðŸ¥§", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold â€” Â£3.00","Warm with sauce â€” Â£3.50"]}, image_url:null },
-  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"âš ï¸ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing â€” serves 6â€“8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ¥§", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
-  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"ðŸ ª", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
+  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{}, image_url:null },
+  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
+  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
 ];
 
 const LIVE_DAYS = [5, 6, 0];
@@ -90,7 +90,7 @@ function getQRCodeUrl(text) {
 }
 
 // ============================================================
-// MENU STATE â€” loads from Supabase, falls back to hardcoded
+// MENU STATE — loads from Supabase, falls back to hardcoded
 // Pause state also saved to Supabase store_settings table
 // ============================================================
 const MenuStateContext = createContext();
@@ -111,7 +111,7 @@ function MenuStateProvider({ children }) {
       .select("*")
       .order("created_at", { ascending: true });
     if (data && data.length > 0) {
-      // Normalise options field â€” could be string or object
+      // Normalise options field — could be string or object
       const normalised = data.map(item => ({
         ...item,
         allergens: Array.isArray(item.allergens) ? item.allergens : (item.allergens ? item.allergens.split(",").map(a=>a.trim()) : []),
@@ -195,7 +195,7 @@ function MenuStateProvider({ children }) {
       category: item.category,
       badge: item.badge || null,
       allergens: item.allergens,
-      emoji: item.emoji || "ðŸ ©",
+      emoji: item.emoji || "🍩",
       bg: item.bg || "#2d1b69",
       available: true,
       options: item.options || {},
@@ -559,7 +559,7 @@ function MenuCard({ item, onOpen }) {
         <div className="card-desc">{item.description}</div>
         <div className="card-footer">
           <div>
-            <div className="card-price">from Â£{parseFloat(item.price).toFixed(2)}</div>
+            <div className="card-price">from £{parseFloat(item.price).toFixed(2)}</div>
             <div className="card-allergens">Contains: {Array.isArray(item.allergens) ? item.allergens.join(", ") : item.allergens}</div>
           </div>
           <button className="add-btn" onClick={e => { e.stopPropagation(); onOpen(item); }}>Add +</button>
@@ -577,7 +577,7 @@ function ProductModal({ item, onClose, onAdd }) {
     return d;
   });
   const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
-  const price = (options["How would you like it?"] || "").includes("Â£3.50") ? 3.50 : parseFloat(item.price);
+  const price = (options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price);
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -586,11 +586,11 @@ function ProductModal({ item, onClose, onAdd }) {
             ? <img src={item.image_url} alt={item.name} />
             : <span className="modal-top-emoji">{item.emoji}</span>
           }
-          <button className="modal-close" onClick={onClose}>âœ•</button>
+          <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
           <div className="modal-name">{item.name}</div>
-          <div className="modal-price">Â£{price.toFixed(2)}</div>
+          <div className="modal-price">£{price.toFixed(2)}</div>
           {item.notice && <div className="notice-banner">{item.notice}</div>}
           <div className="modal-desc">{item.description}</div>
           <div style={{ marginBottom:"0.5rem" }}>
@@ -604,7 +604,7 @@ function ProductModal({ item, onClose, onAdd }) {
               </div>
             </div>
           ))}
-          <button className="modal-add-btn" onClick={() => { onAdd({...item, price}, options); onClose(); }}>ADD TO ORDER â€” Â£{price.toFixed(2)}</button>
+          <button className="modal-add-btn" onClick={() => { onAdd({...item, price}, options); onClose(); }}>ADD TO ORDER — £{price.toFixed(2)}</button>
         </div>
       </div>
     </div>
@@ -617,20 +617,20 @@ function CartDrawer({ onClose, onCheckout }) {
     <div className="cart-drawer">
       <div className="drawer-header">
         <div className="drawer-title">YOUR ORDER {count > 0 && `(${count})`}</div>
-        <button className="close-btn" onClick={onClose}>âœ•</button>
+        <button className="close-btn" onClick={onClose}>✕</button>
       </div>
       <div className="drawer-items">
         {cart.length === 0 ? (
-          <div className="empty-cart"><div className="empty-cart-emoji">ðŸ›’</div><div style={{fontWeight:700}}>Nothing added yet!</div><div style={{fontSize:"0.82rem",marginTop:"0.4rem"}}>Browse the menu and add your faves.</div></div>
+          <div className="empty-cart"><div className="empty-cart-emoji">🛒</div><div style={{fontWeight:700}}>Nothing added yet!</div><div style={{fontSize:"0.82rem",marginTop:"0.4rem"}}>Browse the menu and add your faves.</div></div>
         ) : cart.map((item,idx) => (
           <div key={idx} className="cart-item">
             <div className="cart-item-emoji">{item.emoji}</div>
             <div className="cart-item-info">
               <div className="cart-item-name">{item.name}</div>
-              {item.options && <div className="cart-item-opts">{Object.values(item.options).join(" Â· ")}</div>}
-              <div className="cart-item-price">Â£{(item.price * item.qty).toFixed(2)}</div>
+              {item.options && <div className="cart-item-opts">{Object.values(item.options).join(" · ")}</div>}
+              <div className="cart-item-price">£{(item.price * item.qty).toFixed(2)}</div>
               <div className="qty-controls">
-                <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty-1})}>âˆ’</button>
+                <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty-1})}>−</button>
                 <span className="qty-num">{item.qty}</span>
                 <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty+1})}>+</button>
               </div>
@@ -640,8 +640,8 @@ function CartDrawer({ onClose, onCheckout }) {
       </div>
       {cart.length > 0 && (
         <div className="drawer-footer">
-          <div className="drawer-total"><span>Total</span><span>Â£{total.toFixed(2)}</span></div>
-          <button className="checkout-btn" onClick={onCheckout}>CHECKOUT â†’</button>
+          <div className="drawer-total"><span>Total</span><span>£{total.toFixed(2)}</span></div>
+          <button className="checkout-btn" onClick={onCheckout}>CHECKOUT →</button>
         </div>
       )}
     </div>
@@ -655,45 +655,45 @@ function MenuPage() {
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
   const tabs = [
-    { id:"all", label:"ðŸ ½ï¸ Everything" },
-    { id:"donut", label:"ðŸ © Donuts" },
-    { id:"cookie_pie", label:"ðŸ¥§ Cookie Pies" },
-    { id:"cookie_cup", label:"ðŸ ª Cookie Cups" },
+    { id:"all", label:"🍽️ Everything" },
+    { id:"donut", label:"🍩 Donuts" },
+    { id:"cookie_pie", label:"🥧 Cookie Pies" },
+    { id:"cookie_cup", label:"🍪 Cookie Cups" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
   return (
     <>
       {storePaused && (
         <div className="store-closed-banner">
-          <div className="store-closed-title">ðŸ”´ NOT TAKING ORDERS RIGHT NOW</div>
-          <div className="store-closed-sub">We'll be back soon â€” check our socials for updates</div>
+          <div className="store-closed-title">🔴 NOT TAKING ORDERS RIGHT NOW</div>
+          <div className="store-closed-sub">We'll be back soon — check our socials for updates</div>
         </div>
       )}
       <div className={`status-banner ${todayLive && !storePaused ? "open" : "closed"}`}>
-        {todayLive && !storePaused ? "ðŸŸ¢ We're OPEN â€” order for collection or delivery today!" : "â ° Pre-orders welcome â€” we're open Friday, Saturday & Sunday 1pmâ€“11pm"}
+        {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
       </div>
       <div className="hero">
-        <div className="hero-badge">ðŸ”¥ Fresh Made to Order Â· Walsall</div>
+        <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={110} /></div>
         <h1>TEE<span>BAKES</span></h1>
         <div className="hero-sub">Specialty Bakes</div>
-        <p>Fresh fried donuts and warm gooey cookie pies. Order for collection or delivery â€” Friday, Saturday & Sunday 1pmâ€“11pm.</p>
+        <p>Fresh fried donuts and warm gooey cookie pies. Order for collection or delivery — Friday, Saturday & Sunday 1pm–11pm.</p>
         <div className="hero-pills">
-          <span className="hero-pill">ðŸ © Loaded Donuts</span>
-          <span className="hero-pill">ðŸ¥§ Cookie Pies</span>
-          <span className="hero-pill">ðŸ ª Cookie Cups</span>
-          <span className="hero-pill">ðŸš— Delivery Available</span>
+          <span className="hero-pill">🍩 Loaded Donuts</span>
+          <span className="hero-pill">🥧 Cookie Pies</span>
+          <span className="hero-pill">🍪 Cookie Cups</span>
+          <span className="hero-pill">🚗 Delivery Available</span>
         </div>
       </div>
       <div style={{maxWidth:"1100px",margin:"1.5rem auto 0",padding:"0 1.5rem"}}>
         <div className="hours-info">
-          <div className="hours-info-title">ðŸ• OPENING HOURS</div>
-          <div className="hours-row open-day"><span>Friday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
-          <div className="hours-row open-day"><span>Saturday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
-          <div className="hours-row open-day"><span>Sunday</span><span>1:00pm â€“ 11:00pm âœ…</span></div>
-          <div className="hours-row"><span>Monday â€“ Thursday</span><span>Pre-order only (24hr notice)</span></div>
-          <div className="hours-row"><span>Delivery fee</span><span>Â£2.50 Â· Min order Â£10 (delivery only)</span></div>
-          <div className="hours-row"><span>Whole pies</span><span>âš ï¸ 24hr notice required</span></div>
+          <div className="hours-info-title">🕐 OPENING HOURS</div>
+          <div className="hours-row open-day"><span>Friday</span><span>1:00pm – 11:00pm ✅</span></div>
+          <div className="hours-row open-day"><span>Saturday</span><span>1:00pm – 11:00pm ✅</span></div>
+          <div className="hours-row open-day"><span>Sunday</span><span>1:00pm – 11:00pm ✅</span></div>
+          <div className="hours-row"><span>Monday – Thursday</span><span>Pre-order only (24hr notice)</span></div>
+          <div className="hours-row"><span>Delivery fee</span><span>£2.50 · Min order £10 (delivery only)</span></div>
+          <div className="hours-row"><span>Whole pies</span><span>⚠️ 24hr notice required</span></div>
         </div>
       </div>
       <div className="cat-tabs">
@@ -711,7 +711,7 @@ function MenuPage() {
       {count > 0 && (
         <div className="sticky-cart" onClick={() => window.dispatchEvent(new CustomEvent("openCart"))}>
           <div className="sticky-cart-left"><div className="sticky-cart-count">{count}</div><div className="sticky-cart-text">View your order</div></div>
-          <div className="sticky-cart-total">Â£{total.toFixed(2)} â†’</div>
+          <div className="sticky-cart-total">£{total.toFixed(2)} →</div>
         </div>
       )}
     </>
@@ -753,9 +753,9 @@ function CheckoutPage({ onBack, onConfirm }) {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
-          subject: `ðŸ“¦ New TeeBakes Order â€” ${orderId}`,
+          subject: `📦 New TeeBakes Order — ${orderId}`,
           name: form.name, email: form.email,
-          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: Â£${orderTotal.toFixed(2)}`
+          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
         })
       });
     } catch(e) { console.error("Email error:", e); }
@@ -766,10 +766,10 @@ function CheckoutPage({ onBack, onConfirm }) {
   if (storePaused) {
     return (
       <div className="page" style={{textAlign:"center",padding:"4rem 1.5rem"}}>
-        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>ðŸ”´</div>
+        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔴</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"2rem",color:"#e06060",letterSpacing:"2px",marginBottom:"0.5rem"}}>NOT TAKING ORDERS</div>
         <div style={{color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>We're not accepting orders right now. Check back soon!</div>
-        <button className="back-nav-btn" onClick={onBack}>â† Back to Menu</button>
+        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
       </div>
     );
   }
@@ -777,30 +777,30 @@ function CheckoutPage({ onBack, onConfirm }) {
   return (
     <div className="page">
       <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.5rem"}}>
-        <button className="back-nav-btn" onClick={onBack}>â† Back to Menu</button>
+        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
         <h2 style={{fontFamily:"'Bangers',cursive",fontSize:"1.6rem",color:"var(--yellow)",letterSpacing:"2px"}}>CHECKOUT</h2>
       </div>
       <div className="checkout-grid">
         <div>
           <div className="co-section">
-            <div className="co-title">ðŸ“¦ COLLECTION OR DELIVERY?</div>
+            <div className="co-title">📦 COLLECTION OR DELIVERY?</div>
             <div className="type-toggle">
-              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); }}>ðŸ ª Collection</button>
-              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); }}>ðŸš— Delivery (+Â£2.50)</button>
+              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); }}>🏪 Collection</button>
+              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); }}>🚗 Delivery (+£2.50)</button>
             </div>
-            <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>ðŸ“… PICK A DATE</div>
+            <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>📅 PICK A DATE</div>
             <div className="date-grid">
               {availableDays.map(day => (
                 <button key={day.label} className={`date-btn ${day.type==="live"?"live-day":""} ${selDateLabel===day.label?"selected":""}`} onClick={() => selectDate(day)}>
-                  {day.label}<div className="date-btn-sub">{day.type==="live"?"ðŸŸ¢ Open":"ðŸ“… Pre-order"}</div>
+                  {day.label}<div className="date-btn-sub">{day.type==="live"?"🟢 Open":"📅 Pre-order"}</div>
                 </button>
               ))}
             </div>
-            {selDayType === "preorder" && <div className="preorder-notice">ðŸ“‹ <strong>Pre-order day</strong> â€” your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
+            {selDayType === "preorder" && <div className="preorder-notice">📋 <strong>Pre-order day</strong> — your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
             {selDateLabel && (
               <>
-                <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>â ° PICK A TIME</div>
-                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>âš¡ Collection ASAP â€” I'll be there soon!</button>}
+                <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>⏰ PICK A TIME</div>
+                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>⚡ Collection ASAP — I'll be there soon!</button>}
                 <div className="time-grid">
                   {TIME_SLOTS.map(t => <button key={t} className={`time-btn ${selTime===t?"selected":""}`} onClick={() => { setSelTime(t); setAsap(false); }}>{t}</button>)}
                 </div>
@@ -808,7 +808,7 @@ function CheckoutPage({ onBack, onConfirm }) {
             )}
           </div>
           <div className="co-section">
-            <div className="co-title">ðŸ‘¤ YOUR DETAILS</div>
+            <div className="co-title">👤 YOUR DETAILS</div>
             {[{k:"name",l:"Full Name",p:"Your name"},{k:"email",l:"Email",p:"email@example.com"},{k:"phone",l:"Phone",p:"+44 7700 000000"}].map(f => (
               <div key={f.k} className="form-group">
                 <label className="form-label">{f.l}</label>
@@ -827,9 +827,9 @@ function CheckoutPage({ onBack, onConfirm }) {
             </div>
           </div>
           <div className="co-section">
-            <div className="co-title">ðŸ’³ PAYMENT</div>
+            <div className="co-title">💳 PAYMENT</div>
             <div style={{background:"rgba(245,197,66,0.07)",border:"2px solid rgba(245,197,66,0.3)",borderRadius:"10px",padding:"1rem",display:"flex",alignItems:"center",gap:"1rem"}}>
-              <div style={{fontSize:"1.5rem"}}>ðŸ’³</div>
+              <div style={{fontSize:"1.5rem"}}>💳</div>
               <div>
                 <div style={{fontWeight:800,fontSize:"0.9rem",color:"var(--white)"}}>Pay by Card via SumUp</div>
                 <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.4)"}}>You'll be shown a secure payment link after placing your order</div>
@@ -839,18 +839,18 @@ function CheckoutPage({ onBack, onConfirm }) {
         </div>
         <div>
           <div className="co-section" style={{position:"sticky",top:"80px"}}>
-            <div className="co-title">ðŸ§¾ ORDER SUMMARY</div>
-            {cart.map((item,idx) => <div key={idx} className="summary-item"><span>{item.qty}Ã— {item.name}</span><span>Â£{(item.price*item.qty).toFixed(2)}</span></div>)}
-            {type === "delivery" && <div className="summary-item"><span>Delivery fee</span><span>Â£2.50</span></div>}
-            <div className="summary-total"><span>Total</span><span>Â£{orderTotal.toFixed(2)}</span></div>
+            <div className="co-title">🧾 ORDER SUMMARY</div>
+            {cart.map((item,idx) => <div key={idx} className="summary-item"><span>{item.qty}× {item.name}</span><span>£{(item.price*item.qty).toFixed(2)}</span></div>)}
+            {type === "delivery" && <div className="summary-item"><span>Delivery fee</span><span>£2.50</span></div>}
+            <div className="summary-total"><span>Total</span><span>£{orderTotal.toFixed(2)}</span></div>
             {selDateLabel && (asap || selTime) && (
               <div style={{marginTop:"1rem",padding:"0.8rem",background:"rgba(245,197,66,0.07)",borderRadius:"8px",fontSize:"0.82rem",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(245,197,66,0.2)"}}>
-                ðŸ“… {selDateLabel} {asap?"â€” ASAP âš¡":`at ${selTime}`}<br />
-                {type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"}
-                {selDayType==="preorder" && <><br />ðŸ“‹ Pre-order â€” we'll confirm by email</>}
+                📅 {selDateLabel} {asap?"— ASAP ⚡":`at ${selTime}`}<br />
+                {type==="collection"?"🏪 Collection":"🚗 Delivery"}
+                {selDayType==="preorder" && <><br />📋 Pre-order — we'll confirm by email</>}
               </div>
             )}
-            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER â†’"}</button>
+            <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER →"}</button>
             {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
           </div>
         </div>
@@ -864,25 +864,25 @@ function ConfirmationPage({ order, onBackToMenu }) {
   const qrUrl = getQRCodeUrl(paymentLink);
   return (
     <div className="confirmation">
-      <div className="confirm-icon">ðŸŽ‰</div>
+      <div className="confirm-icon">🎉</div>
       <div className="confirm-title">ORDER PLACED!</div>
       <div className="confirm-sub">
         Thanks {order.name.split(" ")[0]}! Your order is confirmed.<br />
         <span style={{color:"var(--yellow)",fontWeight:700}}>Now complete your payment below to secure it.</span>
       </div>
       <div className="confirm-card">
-        {[["Order ID",order.orderId],["Type",order.type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"],["Date",order.date],["Time",order.isAsap?"âš¡ ASAP":order.time],["Total",`Â£${order.total.toFixed(2)}`]].map(([l,v]) => (
+        {[["Order ID",order.orderId],["Type",order.type==="collection"?"🏪 Collection":"🚗 Delivery"],["Date",order.date],["Time",order.isAsap?"⚡ ASAP":order.time],["Total",`£${order.total.toFixed(2)}`]].map(([l,v]) => (
           <div key={l} className="confirm-row"><span className="confirm-label">{l}</span><span className="confirm-value">{v}</span></div>
         ))}
       </div>
       <div className="pay-section">
-        <div className="pay-title">ðŸ’³ COMPLETE PAYMENT</div>
-        <div className="pay-amount">Â£<span>{order.total.toFixed(2)}</span></div>
+        <div className="pay-title">💳 COMPLETE PAYMENT</div>
+        <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
         <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
           When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
         </div>
         <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
-          PAY Â£{order.total.toFixed(2)} ON SUMUP â†’
+          PAY £{order.total.toFixed(2)} ON SUMUP →
         </a>
         <div className="pay-divider">
           <div className="pay-divider-line"></div>
@@ -893,9 +893,9 @@ function ConfirmationPage({ order, onBackToMenu }) {
           <img src={qrUrl} alt="Scan to pay" className="qr-img" />
           <div className="qr-label">Scan with your phone camera to pay</div>
         </div>
-        <div className="pay-note">ðŸ”’ Secure payment powered by SumUp<br />Your order reference: {order.orderId}</div>
+        <div className="pay-note">🔒 Secure payment powered by SumUp<br />Your order reference: {order.orderId}</div>
       </div>
-      <button className="back-btn" onClick={onBackToMenu}>ORDER MORE ðŸ ©</button>
+      <button className="back-btn" onClick={onBackToMenu}>ORDER MORE 🍩</button>
     </div>
   );
 }
@@ -937,17 +937,17 @@ function AdminDashboard({ storePaused, setStorePaused }) {
     <div>
       <div className={`pause-banner ${storePaused?"":"open-state"}`}>
         <div>
-          <div className="pause-banner-text">{storePaused ? "ðŸ”´ Orders are PAUSED â€” customers cannot order" : "ðŸŸ¢ Store is OPEN â€” accepting orders"}</div>
-          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Saved permanently â€” survives page refresh</div>
+          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED — customers cannot order" : "🟢 Store is OPEN — accepting orders"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Saved permanently — survives page refresh</div>
         </div>
         <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={handlePauseToggle}>
-          {storePaused ? "â–¶ Resume Orders" : "â ¸ Pause Orders"}
+          {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
         </button>
       </div>
       <div className="stats-grid">
         {[
           {label:"Total Orders",value:orders.length,sub:`${orders.filter(o=>o.order_status==="new").length} new`},
-          {label:"Revenue",value:`Â£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},
+          {label:"Revenue",value:`£${orders.reduce((s,o)=>s+(o.total||0),0).toFixed(2)}`,sub:"all time"},
           {label:"Collections",value:orders.filter(o=>o.type==="collection").length,sub:"total"},
           {label:"Deliveries",value:orders.filter(o=>o.type==="delivery").length,sub:"total"},
         ].map(s => (
@@ -962,21 +962,21 @@ function AdminDashboard({ storePaused, setStorePaused }) {
       {loading
         ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading orders...</div>
         : filtered.length===0
-          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet ðŸ‘€</div>
+          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No orders yet 👀</div>
           : <div className="orders-list">{filtered.map(o => (
               <div key={o.id} className="order-card">
                 <div>
                   <div className="order-id">{o.id}</div>
                   <div className="order-name">{o.customer_name}</div>
-                  <div className="order-detail">ðŸ“§ {o.customer_email}</div>
-                  <div className="order-detail">ðŸ“± {o.customer_phone}</div>
-                  <div className="order-detail">{o.type==="collection"?"ðŸ ª Collection":"ðŸš— Delivery"} Â· {o.date} at {o.time}</div>
-                  {o.delivery_address && <div className="order-detail">ðŸ“ {o.delivery_address}</div>}
-                  {o.notes && <div className="order-detail">ðŸ“ {o.notes}</div>}
-                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}Ã— {item.name}</span>)}</div>
+                  <div className="order-detail">📧 {o.customer_email}</div>
+                  <div className="order-detail">📱 {o.customer_phone}</div>
+                  <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
+                  {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
+                  {o.notes && <div className="order-detail">📝 {o.notes}</div>}
+                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}× {item.name}</span>)}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div className="order-total-badge">Â£{(o.total||0).toFixed(2)}</div>
+                  <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
                   <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
                   <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
                     <option value="new">New</option>
@@ -993,7 +993,7 @@ function AdminDashboard({ storePaused, setStorePaused }) {
 }
 
 // ============================================================
-// ADMIN MENU â€” with Add Item, Upload Image, Delete
+// ADMIN MENU — with Add Item, Upload Image, Delete
 // ============================================================
 function AdminMenu() {
   const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage } = useContext(MenuStateContext);
@@ -1003,7 +1003,7 @@ function AdminMenu() {
   const [imagePreview, setImagePreview] = useState(null);
   const [newItem, setNewItem] = useState({
     name:"", price:"", category:"donut", description:"",
-    allergens:"gluten, eggs, dairy", emoji:"ðŸ ©", badge:"", bg:"#2d1b69",
+    allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
   });
 
   function showToast(msg, type="success") {
@@ -1029,12 +1029,12 @@ function AdminMenu() {
     };
     const ok = await addMenuItem(itemToAdd, imageFile);
     if (ok) {
-      showToast("âœ… Item added successfully!");
-      setNewItem({ name:"", price:"", category:"donut", description:"", allergens:"gluten, eggs, dairy", emoji:"ðŸ ©", badge:"", bg:"#2d1b69" });
+      showToast("✅ Item added successfully!");
+      setNewItem({ name:"", price:"", category:"donut", description:"", allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69" });
       setImageFile(null);
       setImagePreview(null);
     } else {
-      showToast("â Œ Failed to add item", "error");
+      showToast("❌ Failed to add item", "error");
     }
     setAdding(false);
   }
@@ -1042,7 +1042,7 @@ function AdminMenu() {
   async function handleDelete(id, name) {
     if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
     const ok = await deleteMenuItem(id);
-    ok ? showToast(`ðŸ—‘ï¸ "${name}" deleted`) : showToast("â Œ Delete failed", "error");
+    ok ? showToast(`🗑️ "${name}" deleted`) : showToast("❌ Delete failed", "error");
   }
 
   async function handleImageUpload(id, e) {
@@ -1050,10 +1050,10 @@ function AdminMenu() {
     if (!file) return;
     showToast("Uploading image...");
     const ok = await updateMenuItemImage(id, file);
-    ok ? showToast("âœ… Image updated!") : showToast("â Œ Upload failed", "error");
+    ok ? showToast("✅ Image updated!") : showToast("❌ Upload failed", "error");
   }
 
-  const cats = [{id:"donut",label:"ðŸ © Donuts"},{id:"cookie_pie",label:"ðŸ¥§ Cookie Pies"},{id:"cookie_cup",label:"ðŸ ª Cookie Cups"}];
+  const cats = [{id:"donut",label:"🍩 Donuts"},{id:"cookie_pie",label:"🥧 Cookie Pies"},{id:"cookie_cup",label:"🍪 Cookie Cups"}];
 
   return (
     <div>
@@ -1061,27 +1061,27 @@ function AdminMenu() {
 
       {/* ADD NEW ITEM */}
       <div className="add-item-section">
-        <div className="add-item-title">âž• ADD NEW MENU ITEM</div>
+        <div className="add-item-title">➕ ADD NEW MENU ITEM</div>
         <div className="add-item-grid">
           <div className="form-group">
             <label className="form-label">Item Name *</label>
             <input className="form-input" placeholder="e.g. Kinder Donut Box" value={newItem.name} onChange={e => setNewItem(p=>({...p,name:e.target.value}))} />
           </div>
           <div className="form-group">
-            <label className="form-label">Price (Â£) *</label>
+            <label className="form-label">Price (£) *</label>
             <input className="form-input" type="number" step="0.50" placeholder="3.00" value={newItem.price} onChange={e => setNewItem(p=>({...p,price:e.target.value}))} />
           </div>
           <div className="form-group">
             <label className="form-label">Category</label>
             <select className="form-select" value={newItem.category} onChange={e => setNewItem(p=>({...p,category:e.target.value}))}>
-              <option value="donut">ðŸ © Donut</option>
-              <option value="cookie_pie">ðŸ¥§ Cookie Pie</option>
-              <option value="cookie_cup">ðŸ ª Cookie Cup</option>
+              <option value="donut">🍩 Donut</option>
+              <option value="cookie_pie">🥧 Cookie Pie</option>
+              <option value="cookie_cup">🍪 Cookie Cup</option>
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">Emoji</label>
-            <input className="form-input" placeholder="ðŸ ©" value={newItem.emoji} onChange={e => setNewItem(p=>({...p,emoji:e.target.value}))} />
+            <input className="form-input" placeholder="🍩" value={newItem.emoji} onChange={e => setNewItem(p=>({...p,emoji:e.target.value}))} />
           </div>
           <div className="form-group" style={{gridColumn:"1/-1"}}>
             <label className="form-label">Description</label>
@@ -1104,13 +1104,13 @@ function AdminMenu() {
             <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={handleImagePick} />
             {imagePreview
               ? <img src={imagePreview} alt="Preview" className="img-preview" />
-              : <><div style={{fontSize:"2rem"}}>ðŸ“¸</div><div className="upload-zone-text">Tap to take a photo or choose from camera roll</div></>
+              : <><div style={{fontSize:"2rem"}}>📸</div><div className="upload-zone-text">Tap to take a photo or choose from camera roll</div></>
             }
           </label>
         </div>
 
         <button className="add-item-btn" onClick={handleAddItem} disabled={adding}>
-          {adding ? "ADDING..." : "âž• ADD TO MENU"}
+          {adding ? "ADDING..." : "➕ ADD TO MENU"}
         </button>
       </div>
 
@@ -1129,16 +1129,16 @@ function AdminMenu() {
                 </div>
                 <div className="admin-card-body">
                   <div className="admin-card-name">{item.name}</div>
-                  <div className="admin-card-price">Â£{parseFloat(item.price).toFixed(2)}</div>
+                  <div className="admin-card-price">£{parseFloat(item.price).toFixed(2)}</div>
                   <div className="admin-card-actions">
                     <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggleItem(item.id)}>
-                      {item.available?"â— Available":"âœ— Hidden"}
+                      {item.available?"● Available":"✗ Hidden"}
                     </button>
                     <label className="upload-img-btn" style={{cursor:"pointer"}}>
-                      ðŸ“¸ Photo
+                      📸 Photo
                       <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={e => handleImageUpload(item.id, e)} />
                     </label>
-                    <button className="delete-item-btn" onClick={() => handleDelete(item.id, item.name)}>ðŸ—‘ï¸ Delete</button>
+                    <button className="delete-item-btn" onClick={() => handleDelete(item.id, item.name)}>🗑️ Delete</button>
                   </div>
                 </div>
               </div>
@@ -1157,7 +1157,7 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"ðŸ“‹ Orders"},{id:"menu",label:"ðŸ © Menu"}].map(t =>
+        {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
       </div>
@@ -1178,12 +1178,12 @@ function AdminPinLock({ onUnlock }) {
   return (
     <div style={{minHeight:"100vh",background:"var(--dark)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"#1a1040",borderRadius:"20px",padding:"2.5rem",border:"2px solid rgba(245,197,66,0.3)",width:"320px",textAlign:"center"}}>
-        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>ðŸ”’</div>
+        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔒</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.8rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.5rem"}}>ADMIN ACCESS</div>
         <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem",marginBottom:"1.5rem"}}>Enter your PIN to continue</div>
-        <input type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="â€¢â€¢â€¢â€¢"
+        <input type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="••••"
           style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:`2px solid ${error?"#e06060":"rgba(255,255,255,0.15)"}`,background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1.5rem",letterSpacing:"0.5rem",outline:"none",marginBottom:"1rem"}} />
-        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>â Œ Wrong PIN, try again</div>}
+        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>❌ Wrong PIN, try again</div>}
         <button onClick={handleSubmit} style={{width:"100%",padding:"0.9rem",background:"var(--yellow)",color:"var(--dark)",border:"none",borderRadius:"10px",cursor:"pointer",fontFamily:"'Bangers',cursive",fontSize:"1.2rem",letterSpacing:"2px"}}>UNLOCK</button>
       </div>
     </div>
@@ -1199,7 +1199,7 @@ function App() {
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
-  useEffect(() => { document.title = "TeeBakes â€” Fresh Donuts & Cookie Pies | Walsall"; }, []);
+  useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Walsall"; }, []);
 
   return (
     <div className="app">
@@ -1215,7 +1215,7 @@ function App() {
         <div className="nav-actions">
           <button className={`nav-btn ${page==="menu"?"active":""}`} onClick={() => setPage("menu")}>Menu</button>
           {showAdminBtn && <button className={`nav-btn ${page==="admin"?"active":""}`} onClick={() => setPage("admin")}>Admin</button>}
-          {page !== "admin" && <button className="cart-btn" onClick={() => setCartOpen(true)}>ðŸ›’ Cart {count>0&&<span className="cart-badge">{count}</span>}</button>}
+          {page !== "admin" && <button className="cart-btn" onClick={() => setCartOpen(true)}>🛒 Cart {count>0&&<span className="cart-badge">{count}</span>}</button>}
         </div>
       </nav>
       {page==="menu" && <MenuPage />}
