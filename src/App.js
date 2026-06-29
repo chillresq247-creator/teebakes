@@ -176,10 +176,10 @@ function MenuStateProvider({ children }) {
       const ext = imageFile.name.split(".").pop();
       const filename = `${Date.now()}-${Math.random().toString(36).substr(2,6)}.${ext}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("menu-images")
+        .from("menu images")
         .upload(filename, imageFile, { contentType: imageFile.type, upsert: true });
       if (!uploadError && uploadData) {
-        const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(filename);
+        const { data: urlData } = supabase.storage.from("menu images").getPublicUrl(filename);
         image_url = urlData.publicUrl;
       } else {
         console.error("Image upload error:", uploadError);
