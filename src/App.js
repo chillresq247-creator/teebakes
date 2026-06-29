@@ -1101,7 +1101,7 @@ function AdminMenu() {
         <div className="form-group" style={{marginTop:"0.5rem"}}>
           <label className="form-label">Product Photo (optional)</label>
           <label className="upload-zone" style={{display:"block",cursor:"pointer"}}>
-            <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={handleImagePick} />
+            <input type="file" accept="image/*"  className="hidden-input" onChange={handleImagePick} />
             {imagePreview
               ? <img src={imagePreview} alt="Preview" className="img-preview" />
               : <><div style={{fontSize:"2rem"}}>📸</div><div className="upload-zone-text">Tap to take a photo or choose from camera roll</div></>
@@ -1136,7 +1136,7 @@ function AdminMenu() {
                     </button>
                     <label className="upload-img-btn" style={{cursor:"pointer"}}>
                       📸 Photo
-                      <input type="file" accept="image/*" capture="environment" className="hidden-input" onChange={e => handleImageUpload(item.id, e)} />
+                      <input type="file" accept="image/*"  className="hidden-input" onChange={e => handleImageUpload(item.id, e)} />
                     </label>
                     <button className="delete-item-btn" onClick={() => handleDelete(item.id, item.name)}>🗑️ Delete</button>
                   </div>
