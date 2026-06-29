@@ -224,7 +224,7 @@ function MenuStateProvider({ children }) {
       .from("menu images")
       .upload(filename, imageFile, { contentType: imageFile.type, upsert: true });
     if (uploadError) { console.error("Upload error:", uploadError); return false; }
-    const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(filename);
+    const { data: urlData } = supabase.storage.from("menu images").getPublicUrl(filename);
     const image_url = urlData.publicUrl;
     await supabase.from("menu_items").update({ image_url }).eq("id", id);
     setMenuItems(items => items.map(i => i.id === id ? {...i, image_url} : i));
