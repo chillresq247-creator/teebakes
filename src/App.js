@@ -101,9 +101,14 @@ function MenuStateProvider({ children }) {
 
   // Load menu from Supabase on mount
   useEffect(() => {
+  loadMenuFromSupabase();
+  loadStorePauseState();
+  const interval = setInterval(() => {
     loadMenuFromSupabase();
     loadStorePauseState();
-  }, []);
+  }, 30000);
+  return () => clearInterval(interval);
+}, []);
 
   async function loadMenuFromSupabase() {
     const { data, error } = await supabase
@@ -216,7 +221,7 @@ function MenuStateProvider({ children }) {
     const ext = imageFile.name.split(".").pop();
     const filename = `${Date.now()}-${id}.${ext}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("menu-images")
+      .from("menu images")
       .upload(filename, imageFile, { contentType: imageFile.type, upsert: true });
     if (uploadError) { console.error("Upload error:", uploadError); return false; }
     const { data: urlData } = supabase.storage.from("menu-images").getPublicUrl(filename);
