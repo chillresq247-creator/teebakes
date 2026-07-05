@@ -123,13 +123,31 @@ function MenuStateProvider({ children }) {
         options: typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {}),
       }));
       setMenuItems(normalised);
-    } else {
-      // Use fallback and seed Supabase
+    useEffect(() => {
+  const loadMenu = async () => {
+    try {
+      setMenuLoading(true);
+      const { data, error } = await supabase
+        .from("menu_items")
+        .select("*");
+
+      if (!error && data && data.length > 0) {
+        console.log("✅ Loaded live menu from Supabase:", data);
+        setMenuItems(data);
+      } else {
+        console.warn("⚠️ Supabase issue or empty — using fallback menu:", error?.message);
+        setMenuItems(FALLBACK_MENU);
+      }
+    } catch (err) {
+      console.error("❌ Failed to load menu — network or connection issue:", err);
       setMenuItems(FALLBACK_MENU);
-      if (!error) seedMenuToSupabase();
+    } finally {
+      setMenuLoading(false);
     }
-    setMenuLoading(false);
-  }
+  };
+
+  loadMenu();
+}, []);
 
   async function seedMenuToSupabase() {
     for (const item of FALLBACK_MENU) {
