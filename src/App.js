@@ -1263,13 +1263,3 @@ function App() {
     </div>
   );
 }
-
-export default function WrappedApp() {
-  return (
-    <MenuStateProvider>
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </MenuStateProvider>
-  );
-}
