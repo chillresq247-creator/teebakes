@@ -78,6 +78,19 @@ function getAvailableDays(n) {
   }
   return days;
 }
+function getLiveDays(n) {
+  const days = [];
+  for (let i = 0; i <= 60; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    d.setHours(0,0,0,0);
+    if (!LIVE_DAYS.includes(d.getDay())) continue;
+    if (i === 0 && new Date().getHours() >= 23) continue;
+    days.push({ date:d, label:fmtDate(d), type:"live" });
+    if (days.length === n) break;
+  }
+  return days;
+}
 function isTodayLive() {
   const now = new Date();
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
@@ -123,31 +136,11 @@ function MenuStateProvider({ children }) {
         options: typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {}),
       }));
       setMenuItems(normalised);
-    useEffect(() => {
-  const loadMenu = async () => {
-    try {
-      setMenuLoading(true);
-      const { data, error } = await supabase
-        .from("menu_items")
-        .select("*");
-
-      if (!error && data && data.length > 0) {
-        console.log("✅ Loaded live menu from Supabase:", data);
-        setMenuItems(data);
-      } else {
-        console.warn("⚠️ Supabase issue or empty — using fallback menu:", error?.message);
-        setMenuItems(FALLBACK_MENU);
-      }
-    } catch (err) {
-      console.error("❌ Failed to load menu — network or connection issue:", err);
+    } else {
+      console.warn("⚠️ Supabase issue or empty — using fallback menu:", error?.message);
       setMenuItems(FALLBACK_MENU);
-    } finally {
-      setMenuLoading(false);
     }
-  };
-
-  loadMenu();
-    }, []);
+  }
 
   async function seedMenuToSupabase() {
     for (const item of FALLBACK_MENU) {
@@ -744,8 +737,9 @@ function MenuPage() {
 function CheckoutPage({ onBack, onConfirm }) {
   const { cart, total } = useContext(CartContext);
   const { storePaused } = useContext(MenuStateContext);
-  const availableDays = useState(() => getAvailableDays(12))[0];
+  const availableDays = useState(() => getLiveDays(12))[0];
   const [type, setType] = useState("collection");
+  const visibleDays = availableDays;
   const [selDateLabel, setSelDateLabel] = useState(null);
   const [selDayType, setSelDayType] = useState(null);
   const [selTime, setSelTime] = useState(null);
@@ -808,12 +802,12 @@ function CheckoutPage({ onBack, onConfirm }) {
           <div className="co-section">
             <div className="co-title">📦 COLLECTION OR DELIVERY?</div>
             <div className="type-toggle">
-              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); }}>🏪 Collection</button>
-              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); }}>🚗 Delivery (+£2.50)</button>
+              <button className={`type-btn ${type==="collection"?"selected":""}`} onClick={() => { setType("collection"); setAsap(false); setSelDateLabel(null); setSelDayType(null); setSelTime(null); }}>🏪 Collection</button>
+              <button className={`type-btn ${type==="delivery"?"selected":""}`} onClick={() => { setType("delivery"); setAsap(false); setSelDateLabel(null); setSelDayType(null); setSelTime(null); }}>🚗 Delivery (+£2.50)</button>
             </div>
             <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>📅 PICK A DATE</div>
             <div className="date-grid">
-              {availableDays.map(day => (
+              {visibleDays.map(day => (
                 <button key={day.label} className={`date-btn ${day.type==="live"?"live-day":""} ${selDateLabel===day.label?"selected":""}`} onClick={() => selectDate(day)}>
                   {day.label}<div className="date-btn-sub">{day.type==="live"?"🟢 Open":"📅 Pre-order"}</div>
                 </button>
