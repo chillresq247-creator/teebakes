@@ -1,38 +1,33 @@
-name: Deploy Teebakes Shop
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main ]
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
-      # ✅ Add retry to fix the ECONNRESET network issue
+          node-version: '18'
+          cache: 'npm'
+
       - name: Install dependencies
         run: |
-          for i in {1..3}; do npm ci && break || sleep 3; done
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./build
+          npm ci --prefer-offline || npm ci || npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
