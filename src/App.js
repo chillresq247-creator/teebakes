@@ -29,16 +29,16 @@ function CartProvider({ children }) {
 
 // Fallback menu if Supabase is empty
 const FALLBACK_MENU = [
-  { id:"d-sugar", category:"donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{}, image_url:null },
-  { id:"d-loaded", category:"donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]}, image_url:null },
-  { id:"d-flavoured", category:"donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]}, image_url:null },
-  { id:"cp-slice", category:"cookie_pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
-  { id:"cp-choc", category:"cookie_pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
-  { id:"cp-lotus-pie", category:"cookie_pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
-  { id:"cp-oreo-pie", category:"cookie_pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
-  { id:"cp-mm-pie", category:"cookie_pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
-  { id:"cp-whole", category:"cookie_pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
-  { id:"cc-main", category:"cookie_cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
+  { id:"d-sugar", category:"Donut", name:"Sugar Donut Box (4)", price:3.00, badge:"4 for £3", description:"A box of 4 fresh fried ring donuts dusted in caster sugar. Light, pillowy and made fresh to order. A TeeBakes classic.", allergens:["gluten","eggs","dairy"], emoji:"🍩", bg:"#2d1b69", available:true, options:{}, image_url:null },
+  { id:"d-loaded", category:"Donut", name:"Loaded Donut Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 loaded donuts smothered in your chosen sauce and piled high with toppings. Mix or all one flavour.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#8B4513", available:true, options:{"Choose Flavour":["Mixed","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"d-flavoured", category:"Donut", name:"Flavoured Box (4)", price:4.00, badge:"4 for £4", description:"A box of 4 donuts in your chosen flavour — Apple Crumble with white choc sauce, Oreo, Kinder or Biscoff.", allergens:["gluten","eggs","dairy","soy"], emoji:"🍩", bg:"#5c3317", available:true, options:{"Choose Flavour":["Apple Crumble & White Choc","Oreo","Kinder","Biscoff"]}, image_url:null },
+  { id:"cp-slice", category:"Cookie Pie", name:"Cookie Pie Slice", price:3.00, badge:"Warm & Gooey", description:"A generous slice of our famous cookie pie. £3 cold or £3.50 warm with sauce. Ask about today's flavour.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#5c3317", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-choc", category:"Cookie Pie", name:"Triple Choc Pie Slice", price:3.00, badge:null, description:"Thick cookie base loaded with dark, milk and white chocolate chunks. Gooey in the middle, crisp on the edges.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#2c1507", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-lotus-pie", category:"cookie Pie", name:"Biscoff Cookie Pie Slice", price:3.00, badge:"Most Popular", description:"Cookie base swirled with Biscoff spread, topped with a Biscoff biscuit and chocolate drizzle. Incredible warm.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#b5722a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-oreo-pie", category:"Cookie Pie", name:"Oreo Cookie Pie Slice", price:3.00, badge:null, description:"Cookie dough baked with Oreo pieces throughout, topped with chocolate ganache and a whole Oreo on top.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#1a1a1a", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-mm-pie", category:"Cookie Pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
+  { id:"cp-whole", category:"Cookie Pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
+  { id:"cc-main", category:"Cookie Cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
 ];
 
 const LIVE_DAYS = [5, 6, 0];
@@ -1007,7 +1007,7 @@ function AdminMenu() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [newItem, setNewItem] = useState({
-    name:"", price:"", category:"donut", description:"",
+    name:"", price:"", category:"Donut", description:"",
     allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
   });
 
@@ -1079,9 +1079,9 @@ function AdminMenu() {
           <div className="form-group">
             <label className="form-label">Category</label>
             <select className="form-select" value={newItem.category} onChange={e => setNewItem(p=>({...p,category:e.target.value}))}>
-              <option value="donut">🍩 Donut</option>
-              <option value="cookie_pie">🥧 Cookie Pie</option>
-              <option value="cookie_cup">🍪 Cookie Cup</option>
+              <option value="Donut">🍩 Donut</option>
+              <option value="Cookie Pie">🥧 Cookie Pie</option>
+              <option value="Cookie Cup">🍪 Cookie Cup</option>
             </select>
           </div>
           <div className="form-group">
