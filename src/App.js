@@ -147,7 +147,7 @@ function MenuStateProvider({ children }) {
   };
 
   loadMenu();
-}, []);
+    }, []);
 
   async function seedMenuToSupabase() {
     for (const item of FALLBACK_MENU) {
