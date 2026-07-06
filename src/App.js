@@ -672,9 +672,10 @@ function MenuPage() {
   const todayLive = isTodayLive();
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
-    { id:"donut", label:"🍩 Donuts" },
-    { id:"cookie_pie", label:"🥧 Cookie Pies" },
-    { id:"cookie_cup", label:"🍪 Cookie Cups" },
+    { id:"Donut", label:"🍩 Donuts" },
+    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
+    { id:"Cookie Cup", label:"🍪 Cookie Cups" },
+    { id:"Extra", label:"✨ Extras" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
   return (
@@ -1047,7 +1048,7 @@ function AdminMenu() {
     const ok = await addMenuItem(itemToAdd, imageFile);
     if (ok) {
       showToast("✅ Item added successfully!");
-      setNewItem({ name:"", price:"", category:"donut", description:"", allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69" });
+      setNewItem({ name:"", price:"", category:"Donut", description:"", allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69" });
       setImageFile(null);
       setImagePreview(null);
     } else {
@@ -1070,7 +1071,7 @@ function AdminMenu() {
     ok ? showToast("✅ Image updated!") : showToast("❌ Upload failed", "error");
   }
 
-  const cats = [{id:"donut",label:"🍩 Donuts"},{id:"cookie_pie",label:"🥧 Cookie Pies"},{id:"cookie_cup",label:"🍪 Cookie Cups"}];
+  const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Extra",label:"✨ Extras"}];
 
   return (
     <div>
@@ -1094,6 +1095,7 @@ function AdminMenu() {
               <option value="Donut">🍩 Donut</option>
               <option value="Cookie Pie">🥧 Cookie Pie</option>
               <option value="Cookie Cup">🍪 Cookie Cup</option>
+              <option value="Extra">✨ Extra</option>
             </select>
           </div>
           <div className="form-group">
@@ -1207,7 +1209,7 @@ function AdminPinLock({ onUnlock }) {
   );
 }
 
-function App() {
+function AppInner() {
   const [page, setPage] = useState("menu");
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
@@ -1258,4 +1260,12 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <CartProvider>
+      <MenuStateProvider>
+        <AppInner />
+      </MenuStateProvider>
+    </CartProvider>
+  );
+}
