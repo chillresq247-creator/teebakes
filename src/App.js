@@ -127,7 +127,7 @@ function MenuStateProvider({ children }) {
     const { data, error } = await supabase
       .from("menu_items")
       .select("*")
-      .order("created_at", { ascending: true });
+      .order("id", { ascending: true });
     if (data && data.length > 0) {
       // Normalise options field — could be string or object
       const normalised = data.map(item => ({
@@ -140,6 +140,7 @@ function MenuStateProvider({ children }) {
       console.warn("⚠️ Supabase issue or empty — using fallback menu:", error?.message);
       setMenuItems(FALLBACK_MENU);
     }
+    setMenuLoading(false);
   }
 
   async function seedMenuToSupabase() {
