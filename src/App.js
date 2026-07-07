@@ -186,6 +186,14 @@ function MenuStateProvider({ children }) {
     await supabase.from("menu_items").update({ available: newAvail }).eq("id", id);
   }
 
+  async function updateMenuItemPrice(id, newPrice) {
+    const price = parseFloat(newPrice);
+    if (isNaN(price) || price < 0) return false;
+    setMenuItems(items => items.map(i => i.id === id ? {...i, price} : i));
+    const { error } = await supabase.from("menu_items").update({ price }).eq("id", id);
+    return !error;
+  }
+
   async function addMenuItem(newItem, imageFile) {
     let image_url = null;
     // Upload image if provided
@@ -249,7 +257,7 @@ function MenuStateProvider({ children }) {
     <MenuStateContext.Provider value={{
       menuItems, availableItems, toggleItem, menuLoading,
       storePaused, setStorePaused,
-      addMenuItem, deleteMenuItem, updateMenuItemImage
+      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice
     }}>
       {children}
     </MenuStateContext.Provider>
@@ -709,7 +717,6 @@ function MenuPage() {
           <div className="hours-row open-day"><span>Friday</span><span>1:00pm – 11:00pm ✅</span></div>
           <div className="hours-row open-day"><span>Saturday</span><span>1:00pm – 11:00pm ✅</span></div>
           <div className="hours-row open-day"><span>Sunday</span><span>1:00pm – 11:00pm ✅</span></div>
-          <div className="hours-row"><span>Monday – Thursday</span><span>Pre-order only (24hr notice)</span></div>
           <div className="hours-row"><span>Delivery fee</span><span>£2.50 · Min order £10 (delivery only)</span></div>
           <div className="hours-row"><span>Whole pies</span><span>⚠️ 24hr notice required</span></div>
         </div>
@@ -1015,11 +1022,13 @@ function AdminDashboard({ storePaused, setStorePaused }) {
 // ADMIN MENU — with Add Item, Upload Image, Delete
 // ============================================================
 function AdminMenu() {
-  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage } = useContext(MenuStateContext);
+  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice } = useContext(MenuStateContext);
   const [toast, setToast] = useState(null);
   const [adding, setAdding] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [editingPriceId, setEditingPriceId] = useState(null);
+  const [priceDraft, setPriceDraft] = useState("");
   const [newItem, setNewItem] = useState({
     name:"", price:"", category:"Donut", description:"",
     allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
@@ -1070,6 +1079,17 @@ function AdminMenu() {
     showToast("Uploading image...");
     const ok = await updateMenuItemImage(id, file);
     ok ? showToast("✅ Image updated!") : showToast("❌ Upload failed", "error");
+  }
+
+  function startEditPrice(item) {
+    setEditingPriceId(item.id);
+    setPriceDraft(parseFloat(item.price).toFixed(2));
+  }
+
+  async function saveEditPrice(id) {
+    const ok = await updateMenuItemPrice(id, priceDraft);
+    if (ok) { showToast("✅ Price updated!"); setEditingPriceId(null); }
+    else showToast("❌ Enter a valid price", "error");
   }
 
   const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Extra",label:"✨ Extras"}];
@@ -1149,7 +1169,27 @@ function AdminMenu() {
                 </div>
                 <div className="admin-card-body">
                   <div className="admin-card-name">{item.name}</div>
-                  <div className="admin-card-price">£{parseFloat(item.price).toFixed(2)}</div>
+                  {editingPriceId === item.id ? (
+                    <div style={{display:"flex",gap:"0.4rem",alignItems:"center",margin:"0.3rem 0"}}>
+                      <span style={{color:"var(--yellow)"}}>£</span>
+                      <input
+                        className="form-input"
+                        type="number"
+                        step="0.50"
+                        autoFocus
+                        style={{width:"80px",padding:"0.3rem 0.5rem"}}
+                        value={priceDraft}
+                        onChange={e => setPriceDraft(e.target.value)}
+                        onKeyDown={e => { if (e.key==="Enter") saveEditPrice(item.id); if (e.key==="Escape") setEditingPriceId(null); }}
+                      />
+                      <button className="add-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => saveEditPrice(item.id)}>Save</button>
+                      <button className="delete-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => setEditingPriceId(null)}>Cancel</button>
+                    </div>
+                  ) : (
+                    <div className="admin-card-price" style={{cursor:"pointer"}} onClick={() => startEditPrice(item)} title="Tap to edit price">
+                      £{parseFloat(item.price).toFixed(2)} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️ edit</span>
+                    </div>
+                  )}
                   <div className="admin-card-actions">
                     <button className={`toggle-avail ${item.available?"on":"off"}`} onClick={() => toggleItem(item.id)}>
                       {item.available?"● Available":"✗ Hidden"}
