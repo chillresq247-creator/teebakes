@@ -210,24 +210,22 @@ function MenuStateProvider({ children }) {
         console.error("Image upload error:", uploadError);
       }
     }
-    const id = `custom-${Date.now()}`;
-    const item = { ...newItem, id, image_url, available: true };
-    const { error } = await supabase.from("menu_items").insert({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: parseFloat(item.price),
-      category: item.category,
-      badge: item.badge || null,
-      allergens: item.allergens,
-      emoji: item.emoji || "🍩",
-      bg: item.bg || "#2d1b69",
+    const { data, error } = await supabase.from("menu_items").insert({
+      name: newItem.name,
+      description: newItem.description,
+      price: parseFloat(newItem.price),
+      category: newItem.category,
+      badge: newItem.badge || null,
+      allergens: newItem.allergens,
+      emoji: newItem.emoji || "🍩",
+      bg: newItem.bg || "#2d1b69",
       available: true,
-      options: item.options || {},
-      notice: item.notice || null,
+      options: newItem.options || {},
+      notice: newItem.notice || null,
       image_url,
-    });
-    if (!error) setMenuItems(prev => [...prev, item]);
+    }).select().single();
+    if (!error && data) setMenuItems(prev => [...prev, data]);
+    else console.error("Add item error:", error?.message);
     return !error;
   }
 
@@ -1213,6 +1211,7 @@ function AdminMenu() {
 function AdminPage() {
   const [tab, setTab] = useState("orders");
   const { storePaused, setStorePaused } = useContext(MenuStateContext);
+  async function handleLogout() { await supabase.auth.signOut(); window.location.href = window.location.pathname; }
   return (
     <div className="admin-layout">
       <div className="admin-sidebar">
@@ -1220,6 +1219,7 @@ function AdminPage() {
         {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
+        <button className="admin-nav-btn" style={{marginTop:"1rem",opacity:0.7}} onClick={handleLogout}>🚪 Log Out</button>
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":"MENU MANAGER"}</div>
@@ -1230,21 +1230,34 @@ function AdminPage() {
   );
 }
 
-const ADMIN_PIN = "0408";
 function AdminPinLock({ onUnlock }) {
-  const [pin, setPin] = useState("");
-  const [error, setError] = useState(false);
-  function handleSubmit() { if (pin===ADMIN_PIN) { onUnlock(); } else { setError(true); setPin(""); setTimeout(()=>setError(false),2000); } }
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (!email || !password) return;
+    setLoading(true);
+    setError("");
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) { setError("❌ Wrong email or password"); return; }
+    if (data?.session) onUnlock();
+  }
+
   return (
     <div style={{minHeight:"100vh",background:"var(--dark)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"#1a1040",borderRadius:"20px",padding:"2.5rem",border:"2px solid rgba(245,197,66,0.3)",width:"320px",textAlign:"center"}}>
         <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔒</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.8rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.5rem"}}>ADMIN ACCESS</div>
-        <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem",marginBottom:"1.5rem"}}>Enter your PIN to continue</div>
-        <input type="password" inputMode="numeric" maxLength={6} value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="••••"
-          style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:`2px solid ${error?"#e06060":"rgba(255,255,255,0.15)"}`,background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1.5rem",letterSpacing:"0.5rem",outline:"none",marginBottom:"1rem"}} />
-        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>❌ Wrong PIN, try again</div>}
-        <button onClick={handleSubmit} style={{width:"100%",padding:"0.9rem",background:"var(--yellow)",color:"var(--dark)",border:"none",borderRadius:"10px",cursor:"pointer",fontFamily:"'Bangers',cursive",fontSize:"1.2rem",letterSpacing:"2px"}}>UNLOCK</button>
+        <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem",marginBottom:"1.5rem"}}>Sign in to continue</div>
+        <input type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Email"
+          style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:"2px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1rem",outline:"none",marginBottom:"0.7rem",boxSizing:"border-box"}} />
+        <input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Password"
+          style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:`2px solid ${error?"#e06060":"rgba(255,255,255,0.15)"}`,background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1rem",outline:"none",marginBottom:"1rem",boxSizing:"border-box"}} />
+        {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>{error}</div>}
+        <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"0.9rem",background:"var(--yellow)",color:"var(--dark)",border:"none",borderRadius:"10px",cursor:"pointer",fontFamily:"'Bangers',cursive",fontSize:"1.2rem",letterSpacing:"2px",opacity:loading?0.6:1}}>{loading?"SIGNING IN...":"SIGN IN"}</button>
       </div>
     </div>
   );
@@ -1255,11 +1268,17 @@ function AppInner() {
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const { count, dispatch } = useContext(CartContext);
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
   useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Walsall"; }, []);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => { setAdminUnlocked(!!data?.session); setAuthChecked(true); });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => { setAdminUnlocked(!!session); });
+    return () => sub?.subscription?.unsubscribe();
+  }, []);
 
   return (
     <div className="app">
@@ -1290,7 +1309,7 @@ function AppInner() {
       {page==="confirmation" && confirmedOrder && (
         <ConfirmationPage order={confirmedOrder} onBackToMenu={() => { setPage("menu"); setConfirmedOrder(null); }} />
       )}
-      {page==="admin" && (adminUnlocked ? <AdminPage /> : <AdminPinLock onUnlock={() => setAdminUnlocked(true)} />)}
+      {page==="admin" && (!authChecked ? <div style={{minHeight:"100vh",background:"var(--dark)"}} /> : (adminUnlocked ? <AdminPage /> : <AdminPinLock onUnlock={() => setAdminUnlocked(true)} />))}
       {cartOpen && (
         <>
           <div className="modal-overlay" onClick={() => setCartOpen(false)} style={{zIndex:250}} />
