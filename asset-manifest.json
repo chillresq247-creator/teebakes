@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/teebakes/static/js/main.aea47eeb.js",
-    "index.html": "/teebakes/index.html",
-    "main.aea47eeb.js.map": "/teebakes/static/js/main.aea47eeb.js.map"
+    "main.js": "/static/js/main.aea47eeb.js",
+    "index.html": "/index.html",
+    "main.aea47eeb.js.map": "/static/js/main.aea47eeb.js.map"
   },
   "entrypoints": [
     "static/js/main.aea47eeb.js"
