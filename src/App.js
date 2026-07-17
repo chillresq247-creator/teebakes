@@ -194,6 +194,14 @@ function MenuStateProvider({ children }) {
     return !error;
   }
 
+  async function updateMenuItemName(id, newName) {
+    const name = (newName || "").trim();
+    if (!name) return false;
+    setMenuItems(items => items.map(i => i.id === id ? {...i, name} : i));
+    const { error } = await supabase.from("menu_items").update({ name }).eq("id", id);
+    return !error;
+  }
+
   async function addMenuItem(newItem, imageFile) {
     let image_url = null;
     // Upload image if provided
@@ -255,7 +263,7 @@ function MenuStateProvider({ children }) {
     <MenuStateContext.Provider value={{
       menuItems, availableItems, toggleItem, menuLoading,
       storePaused, setStorePaused,
-      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice
+      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName
     }}>
       {children}
     </MenuStateContext.Provider>
@@ -1067,13 +1075,15 @@ function AdminDashboard({ storePaused, setStorePaused }) {
 // ADMIN MENU — with Add Item, Upload Image, Delete
 // ============================================================
 function AdminMenu() {
-  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice } = useContext(MenuStateContext);
+  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName } = useContext(MenuStateContext);
   const [toast, setToast] = useState(null);
   const [adding, setAdding] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [editingPriceId, setEditingPriceId] = useState(null);
   const [priceDraft, setPriceDraft] = useState("");
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [nameDraft, setNameDraft] = useState("");
   const [newItem, setNewItem] = useState({
     name:"", price:"", category:"Donut", description:"",
     allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
@@ -1135,6 +1145,17 @@ function AdminMenu() {
     const ok = await updateMenuItemPrice(id, priceDraft);
     if (ok) { showToast("✅ Price updated!"); setEditingPriceId(null); }
     else showToast("❌ Enter a valid price", "error");
+  }
+
+  function startEditName(item) {
+    setEditingNameId(item.id);
+    setNameDraft(item.name);
+  }
+
+  async function saveEditName(id) {
+    const ok = await updateMenuItemName(id, nameDraft);
+    if (ok) { showToast("✅ Name updated!"); setEditingNameId(null); }
+    else showToast("❌ Enter a valid name", "error");
   }
 
   const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Extra",label:"✨ Extras"}];
@@ -1213,7 +1234,24 @@ function AdminMenu() {
                   }
                 </div>
                 <div className="admin-card-body">
-                  <div className="admin-card-name">{item.name}</div>
+                  {editingNameId === item.id ? (
+                    <div style={{display:"flex",gap:"0.4rem",alignItems:"center",margin:"0.3rem 0",flexWrap:"wrap"}}>
+                      <input
+                        className="form-input"
+                        autoFocus
+                        style={{flex:1,minWidth:"120px",padding:"0.3rem 0.5rem"}}
+                        value={nameDraft}
+                        onChange={e => setNameDraft(e.target.value)}
+                        onKeyDown={e => { if (e.key==="Enter") saveEditName(item.id); if (e.key==="Escape") setEditingNameId(null); }}
+                      />
+                      <button className="add-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => saveEditName(item.id)}>Save</button>
+                      <button className="delete-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => setEditingNameId(null)}>Cancel</button>
+                    </div>
+                  ) : (
+                    <div className="admin-card-name" style={{cursor:"pointer"}} onClick={() => startEditName(item)} title="Tap to edit name">
+                      {item.name} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️</span>
+                    </div>
+                  )}
                   {editingPriceId === item.id ? (
                     <div style={{display:"flex",gap:"0.4rem",alignItems:"center",margin:"0.3rem 0"}}>
                       <span style={{color:"var(--yellow)"}}>£</span>
