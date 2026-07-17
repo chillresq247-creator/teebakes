@@ -302,6 +302,11 @@ const STYLES = `
   .popular-title { font-family: 'Bangers', cursive; letter-spacing: 2px; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.75rem; }
   .popular-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
   .popular-medal { position: absolute; top: 8px; left: 8px; font-size: 1.3rem; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .site-footer { text-align: center; padding: 1.5rem 1rem 2rem; font-size: 0.78rem; color: rgba(255,255,255,0.35); }
+  .addon-strip { padding: 0.9rem 1.2rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .addon-title { font-size: 0.78rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
+  .addon-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .addon-btn { background: rgba(245,197,66,0.1); border: 1px solid rgba(245,197,66,0.4); color: var(--yellow); font-size: 0.78rem; font-weight: 700; padding: 0.5rem 0.8rem; border-radius: 20px; cursor: pointer; }
   .hours-info { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
   .hours-info-title { font-family: 'Bangers',cursive; font-size: 1rem; color: var(--yellow); letter-spacing: 1px; margin-bottom: 0.6rem; }
   .hours-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
@@ -668,6 +673,16 @@ function CartDrawer({ onClose, onCheckout }) {
           </div>
         ))}
       </div>
+      {cart.length > 0 && (
+        <div className="addon-strip">
+          <div className="addon-title">Add to your order</div>
+          <div className="addon-row">
+            <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-nutella",name:"Extra Nutella",price:0.75,emoji:"🍫"}})}>🍫 Extra Nutella +£0.75</button>
+            <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-cookiecup",name:"Add a Cookie Cup",price:2.50,emoji:"🍪"}})}>🍪 Cookie Cup +£2.50</button>
+            <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-drink",name:"Add a Drink",price:1.00,emoji:"🥤"}})}>🥤 Drink +£1.00</button>
+          </div>
+        </div>
+      )}
       {cart.length > 0 && (
         <div className="drawer-footer">
           <div className="drawer-total"><span>Total</span><span>£{total.toFixed(2)}</span></div>
@@ -1346,6 +1361,7 @@ function AppInner() {
           <CartDrawer onClose={() => setCartOpen(false)} onCheckout={() => { setCartOpen(false); setPage("checkout"); }} />
         </>
       )}
+      <div className="site-footer">Built from scratch by TeeBakes to make ordering fresh bakes as simple as possible 🍪</div>
     </div>
   );
 }
