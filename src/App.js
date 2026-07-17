@@ -286,7 +286,7 @@ const STYLES = `
   .status-banner { padding: 0.6rem 1.5rem; text-align: center; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.5px; }
   .status-banner.open { background: rgba(79,168,75,0.15); color: var(--green); border-bottom: 1px solid rgba(79,168,75,0.3); }
   .status-banner.closed { background: rgba(245,197,66,0.08); color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .hero { background: linear-gradient(rgba(15,10,35,0.78), rgba(15,10,35,0.88)), url('/hero-cookiepie.jpg') center 65%/cover no-repeat, var(--dark); padding: 3rem 1.5rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
+  .hero { background: linear-gradient(rgba(15,10,35,0.5), rgba(15,10,35,0.68)), url('/hero-cookiepie.jpg') center 65%/cover no-repeat, var(--dark); padding: 3rem 1.5rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
   .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 80%, rgba(245,197,66,0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(107,63,160,0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(45,27,105,0.4) 0%, transparent 70%); }
   .hero-badge { display: inline-block; background: var(--yellow); color: var(--dark); font-size: 0.7rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; padding: 0.3rem 1rem; border-radius: 20px; margin-bottom: 1rem; position: relative; }
   .hero h1 { font-family: 'Bangers', cursive; font-size: clamp(3rem, 8vw, 5.5rem); line-height: 1; color: var(--white); position: relative; margin-bottom: 0.3rem; letter-spacing: 4px; text-shadow: 0 0 40px rgba(245,197,66,0.3); }
@@ -297,6 +297,11 @@ const STYLES = `
   .hero-cta:active { transform: scale(0.96); }
   .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative; }
   .hero-pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(245,197,66,0.3); color: rgba(255,255,255,0.7); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+  .trust-strip { display: flex; justify-content: center; gap: 1.25rem; margin-top: 1.1rem; flex-wrap: wrap; position: relative; font-size: 0.78rem; color: rgba(255,255,255,0.85); font-weight: 600; }
+  .popular-section { max-width: 1100px; margin: 1.5rem auto 0; padding: 0 1.5rem; }
+  .popular-title { font-family: 'Bangers', cursive; letter-spacing: 2px; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.75rem; }
+  .popular-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+  .popular-medal { position: absolute; top: 8px; left: 8px; font-size: 1.3rem; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
   .hours-info { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
   .hours-info-title { font-family: 'Bangers',cursive; font-size: 1rem; color: var(--yellow); letter-spacing: 1px; margin-bottom: 0.6rem; }
   .hours-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
@@ -311,7 +316,7 @@ const STYLES = `
   .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.2rem; }
   .menu-card { border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.25s; border: 2px solid rgba(255,255,255,0.06); background: var(--card-bg); }
   .menu-card:hover { transform: translateY(-5px); border-color: var(--yellow); box-shadow: 0 16px 40px rgba(245,197,66,0.15); }
-  .card-top { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
+  .card-top { height: 205px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
   .card-top img { width: 90%; height: 90%; object-fit: contain; margin: auto; }
   .card-top-emoji { position: absolute; font-size: 3.5rem; }
   .card-badge { position: absolute; top: 0.7rem; right: 0.7rem; background: var(--yellow); color: var(--dark); font-size: 0.68rem; font-weight: 900; padding: 0.2rem 0.6rem; border-radius: 20px; text-transform: uppercase; z-index: 2; }
@@ -332,7 +337,7 @@ const STYLES = `
   .sticky-cart-total { font-weight: 900; font-size: 1.1rem; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; backdrop-filter: blur(6px); animation: fadeIn 0.2s ease; }
   .modal { background: #1a1040; border-radius: 20px; max-width: 460px; width: 100%; border: 2px solid rgba(245,197,66,0.3); box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
-  .modal-top { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; border-radius: 18px 18px 0 0; overflow: hidden; }
+  .modal-top { height: 195px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; border-radius: 18px 18px 0 0; overflow: hidden; }
   .modal-top img { width: 90%; height: 90%; object-fit: contain; margin: auto; }
   .modal-top-emoji { position: absolute; font-size: 4rem; }
   .modal-close { position: absolute; top: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; }
@@ -681,12 +686,16 @@ function MenuPage() {
   const todayLive = isTodayLive();
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
-    { id:"Donut", label:"🍩 Donuts" },
-    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
     { id:"Cookie Cup", label:"🍪 Cookie Cups" },
+    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
+    { id:"Donut", label:"🍩 Donuts" },
     { id:"Extra", label:"✨ Extras" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
+  // Edit this list of item ids to change what shows in "Popular This Weekend", in order (1st = 🥇)
+  const popularIds = ["cc-main", "cp-lotus-pie", "d-loaded"];
+  const popularItems = popularIds.map(id => availableItems.find(i => i.id === id)).filter(Boolean);
+  const medals = ["🥇", "🥈", "🥉"];
   return (
     <>
       {storePaused && (
@@ -711,7 +720,25 @@ function MenuPage() {
           <span className="hero-pill">🍪 Cookie Cups</span>
           <span className="hero-pill">🚗 Delivery Available</span>
         </div>
+        <div className="trust-strip">
+          <span>⭐ Freshly baked to order</span>
+          <span>🚗 Local delivery available</span>
+          <span>🥚 Made with quality ingredients</span>
+        </div>
       </div>
+      {popularItems.length > 0 && (
+        <div className="popular-section">
+          <div className="popular-title">🔥 Popular This Weekend</div>
+          <div className="popular-grid">
+            {popularItems.map((item, i) => (
+              <div key={item.id} style={{position:"relative"}} onClick={() => setSelectedItem(item)}>
+                <span className="popular-medal">{medals[i]}</span>
+                <MenuCard item={item} onOpen={setSelectedItem} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div style={{maxWidth:"1100px",margin:"1.5rem auto 0",padding:"0 1.5rem"}}>
         <div className="hours-info">
           <div className="hours-info-title">🕐 OPENING HOURS</div>
