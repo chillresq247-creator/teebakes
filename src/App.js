@@ -307,6 +307,7 @@ const STYLES = `
   .addon-title { font-size: 0.78rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
   .addon-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .addon-btn { background: rgba(245,197,66,0.1); border: 1px solid rgba(245,197,66,0.4); color: var(--yellow); font-size: 0.78rem; font-weight: 700; padding: 0.5rem 0.8rem; border-radius: 20px; cursor: pointer; }
+  .wa-btn { display: inline-block; margin-top: 0.5rem; background: #25D366; color: #08340f; font-size: 0.78rem; font-weight: 800; padding: 0.4rem 0.9rem; border-radius: 20px; text-decoration: none; }
   .hours-info { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
   .hours-info-title { font-family: 'Bangers',cursive; font-size: 1rem; color: var(--yellow); letter-spacing: 1px; margin-bottom: 0.6rem; }
   .hours-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
@@ -1039,6 +1040,7 @@ function AdminDashboard({ storePaused, setStorePaused }) {
                   <div className="order-name">{o.customer_name}</div>
                   <div className="order-detail">📧 {o.customer_email}</div>
                   <div className="order-detail">📱 {o.customer_phone}</div>
+                  {o.customer_phone && <a href={waLink(o.customer_phone, `Hi ${o.customer_name}, it's TeeBakes! Just following up on order ${o.id} 🍪`)} target="_blank" rel="noreferrer" className="wa-btn">💬 WhatsApp</a>}
                   <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
                   {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
                   {o.notes && <div className="order-detail">📝 {o.notes}</div>}
@@ -1253,6 +1255,71 @@ function AdminMenu() {
   );
 }
 
+function waLink(phone, message) {
+  const digits = (phone || "").replace(/[^\d]/g, "");
+  const intl = digits.startsWith("44") ? digits : digits.startsWith("0") ? "44" + digits.slice(1) : digits;
+  return `https://wa.me/${intl}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+}
+
+function AdminCustomers() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("dormant");
+
+  useEffect(() => {
+    supabase.from("orders").select("*").order("created_at",{ascending:false}).then(({ data, error }) => {
+      if (!error && data) setOrders(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const customers = React.useMemo(() => {
+    const map = {};
+    orders.forEach(o => {
+      const key = o.customer_phone || o.customer_email;
+      if (!key) return;
+      if (!map[key]) map[key] = { name:o.customer_name, phone:o.customer_phone, email:o.customer_email, orderCount:0, totalSpent:0, lastOrder:o.created_at };
+      map[key].orderCount += 1;
+      map[key].totalSpent += (o.total || 0);
+      if (new Date(o.created_at) > new Date(map[key].lastOrder)) map[key].lastOrder = o.created_at;
+    });
+    const now = new Date();
+    return Object.values(map).map(c => ({
+      ...c, daysSince: Math.floor((now - new Date(c.lastOrder)) / 86400000)
+    })).sort((a,b) => b.daysSince - a.daysSince);
+  }, [orders]);
+
+  const filtered = filter === "dormant" ? customers.filter(c => c.daysSince >= 30) : customers;
+
+  if (loading) return <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading customers...</div>;
+
+  return (
+    <div>
+      <div className="orders-filter">
+        <button className={`filter-btn ${filter==="dormant"?"active":""}`} onClick={() => setFilter("dormant")}>😴 Haven't ordered in 30+ days ({customers.filter(c=>c.daysSince>=30).length})</button>
+        <button className={`filter-btn ${filter==="all"?"active":""}`} onClick={() => setFilter("all")}>👥 All customers ({customers.length})</button>
+      </div>
+      {filtered.length === 0
+        ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>{filter==="dormant" ? "Nobody's overdue right now 🎉" : "No customers yet."}</div>
+        : <div className="orders-list">{filtered.map(c => (
+            <div key={c.phone||c.email} className="order-card">
+              <div>
+                <div className="order-name">{c.name}</div>
+                <div className="order-detail">📧 {c.email}</div>
+                <div className="order-detail">📱 {c.phone}</div>
+                <div className="order-detail">🛒 {c.orderCount} order{c.orderCount!==1?"s":""} · £{c.totalSpent.toFixed(2)} spent</div>
+                <div className="order-detail" style={{color:c.daysSince>=30?"#f5c542":"rgba(255,255,255,0.4)"}}>
+                  {c.daysSince===0 ? "Ordered today" : `Last order: ${c.daysSince} day${c.daysSince!==1?"s":""} ago`}
+                </div>
+                {c.phone && <a href={waLink(c.phone, `Hi ${c.name}, it's TeeBakes! We've missed you 🍪 Fresh bakes are back this weekend — take a look: teebakes.co.uk`)} target="_blank" rel="noreferrer" className="wa-btn">💬 WhatsApp</a>}
+              </div>
+            </div>
+          ))}</div>
+      }
+    </div>
+  );
+}
+
 function AdminPage() {
   const [tab, setTab] = useState("orders");
   const { storePaused, setStorePaused } = useContext(MenuStateContext);
@@ -1261,14 +1328,15 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"📋 Orders"},{id:"menu",label:"🍩 Menu"}].map(t =>
+        {[{id:"orders",label:"📋 Orders"},{id:"customers",label:"👥 Customers"},{id:"menu",label:"🍩 Menu"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
         <button className="admin-nav-btn" style={{marginTop:"1rem",opacity:0.7}} onClick={handleLogout}>🚪 Log Out</button>
       </div>
       <div className="admin-main">
-        <div className="admin-page-title">{tab==="orders"?"ORDERS":"MENU MANAGER"}</div>
+        <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":"MENU MANAGER"}</div>
         {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} />}
+        {tab==="customers" && <AdminCustomers />}
         {tab==="menu" && <AdminMenu />}
       </div>
     </div>
