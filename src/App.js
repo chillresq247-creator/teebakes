@@ -286,13 +286,15 @@ const STYLES = `
   .status-banner { padding: 0.6rem 1.5rem; text-align: center; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.5px; }
   .status-banner.open { background: rgba(79,168,75,0.15); color: var(--green); border-bottom: 1px solid rgba(79,168,75,0.3); }
   .status-banner.closed { background: rgba(245,197,66,0.08); color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .hero { background: var(--dark); padding: 3rem 1.5rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
+  .hero { background: linear-gradient(rgba(15,10,35,0.78), rgba(15,10,35,0.88)), url('/hero-cookiepie.jpg') center 65%/cover no-repeat, var(--dark); padding: 3rem 1.5rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
   .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 80%, rgba(245,197,66,0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(107,63,160,0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(45,27,105,0.4) 0%, transparent 70%); }
   .hero-badge { display: inline-block; background: var(--yellow); color: var(--dark); font-size: 0.7rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; padding: 0.3rem 1rem; border-radius: 20px; margin-bottom: 1rem; position: relative; }
   .hero h1 { font-family: 'Bangers', cursive; font-size: clamp(3rem, 8vw, 5.5rem); line-height: 1; color: var(--white); position: relative; margin-bottom: 0.3rem; letter-spacing: 4px; text-shadow: 0 0 40px rgba(245,197,66,0.3); }
   .hero h1 span { color: var(--yellow); }
   .hero-sub { font-family: 'Bangers', cursive; font-size: clamp(1rem, 3vw, 1.5rem); color: rgba(255,255,255,0.5); letter-spacing: 6px; text-transform: uppercase; position: relative; margin-bottom: 1rem; }
   .hero p { color: rgba(255,255,255,0.6); font-size: 0.95rem; max-width: 440px; margin: 0 auto; line-height: 1.6; position: relative; }
+  .hero-cta { display: inline-block; background: var(--yellow); color: var(--dark); font-family: 'Bangers', cursive; font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; border: none; padding: 0.7rem 2.2rem; border-radius: 30px; margin-top: 0.75rem; cursor: pointer; position: relative; box-shadow: 0 4px 20px rgba(245,197,66,0.35); transition: transform 0.15s ease; }
+  .hero-cta:active { transform: scale(0.96); }
   .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative; }
   .hero-pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(245,197,66,0.3); color: rgba(255,255,255,0.7); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
   .hours-info { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
@@ -310,7 +312,7 @@ const STYLES = `
   .menu-card { border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.25s; border: 2px solid rgba(255,255,255,0.06); background: var(--card-bg); }
   .menu-card:hover { transform: translateY(-5px); border-color: var(--yellow); box-shadow: 0 16px 40px rgba(245,197,66,0.15); }
   .card-top { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
-  .card-top img { width: 100%; height: 100%; object-fit: cover; }
+  .card-top img { width: 90%; height: 90%; object-fit: contain; margin: auto; }
   .card-top-emoji { position: absolute; font-size: 3.5rem; }
   .card-badge { position: absolute; top: 0.7rem; right: 0.7rem; background: var(--yellow); color: var(--dark); font-size: 0.68rem; font-weight: 900; padding: 0.2rem 0.6rem; border-radius: 20px; text-transform: uppercase; z-index: 2; }
   .card-body { padding: 1.1rem; }
@@ -331,7 +333,7 @@ const STYLES = `
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; backdrop-filter: blur(6px); animation: fadeIn 0.2s ease; }
   .modal { background: #1a1040; border-radius: 20px; max-width: 460px; width: 100%; border: 2px solid rgba(245,197,66,0.3); box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
   .modal-top { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; border-radius: 18px 18px 0 0; overflow: hidden; }
-  .modal-top img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-top img { width: 90%; height: 90%; object-fit: contain; margin: auto; }
   .modal-top-emoji { position: absolute; font-size: 4rem; }
   .modal-close { position: absolute; top: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; }
   .modal-close:hover { background: rgba(255,255,255,0.1); }
@@ -470,7 +472,7 @@ const STYLES = `
   .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem; }
   .admin-menu-card { background: #1a1040; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
   .admin-card-img { height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; overflow: hidden; }
-  .admin-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .admin-card-img img { width: 90%; height: 90%; object-fit: contain; margin: auto; }
   .admin-card-img-emoji { position: absolute; font-size: 2.5rem; }
   .admin-card-body { padding: 0.8rem; }
   .admin-card-name { font-weight: 800; font-size: 0.88rem; color: var(--white); margin-bottom: 0.2rem; }
@@ -700,8 +702,9 @@ function MenuPage() {
         <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={110} /></div>
         <h1>TEE<span>BAKES</span></h1>
-        <div className="hero-sub">Specialty Bakes</div>
-        <p>Fresh fried donuts and warm gooey cookie pies. Order for collection or delivery — Friday, Saturday & Sunday 1pm–11pm.</p>
+        <div className="hero-sub">Freshly Baked Every Weekend</div>
+        <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Walsall.</p>
+        <button className="hero-cta" onClick={() => document.getElementById("menu")?.scrollIntoView({behavior:"smooth"})}>Order Now</button>
         <div className="hero-pills">
           <span className="hero-pill">🍩 Loaded Donuts</span>
           <span className="hero-pill">🥧 Cookie Pies</span>
@@ -719,7 +722,7 @@ function MenuPage() {
           <div className="hours-row"><span>Whole pies</span><span>⚠️ 24hr notice required</span></div>
         </div>
       </div>
-      <div className="cat-tabs">
+      <div className="cat-tabs" id="menu">
         {tabs.map(t => <button key={t.id} className={`cat-tab ${activeTab===t.id?"active":""}`} onClick={() => setActiveTab(t.id)}>{t.label}</button>)}
       </div>
       <div className="page" style={{paddingBottom:count>0?"5rem":"1.5rem"}}>
