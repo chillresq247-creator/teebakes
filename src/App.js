@@ -303,6 +303,9 @@ const STYLES = `
   .hero p { color: rgba(255,255,255,0.6); font-size: 0.95rem; max-width: 440px; margin: 0 auto; line-height: 1.6; position: relative; }
   .hero-cta { display: inline-block; background: var(--yellow); color: var(--dark); font-family: 'Bangers', cursive; font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; border: none; padding: 0.7rem 2.2rem; border-radius: 30px; margin-top: 0.75rem; cursor: pointer; position: relative; box-shadow: 0 4px 20px rgba(245,197,66,0.35); transition: transform 0.15s ease; }
   .hero-cta:active { transform: scale(0.96); }
+  .hero-trailer-link { display: block; color: var(--yellow); font-size: 0.85rem; font-weight: 800; text-decoration: underline; margin: 0.6rem 0; position: relative; }
+  .hero-contact { margin-top: 0.6rem; font-size: 0.78rem; color: rgba(255,255,255,0.6); position: relative; }
+  .hero-contact a { color: rgba(255,255,255,0.8); text-decoration: underline; }
   .hero-pills { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative; }
   .hero-pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(245,197,66,0.3); color: rgba(255,255,255,0.7); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
   .trust-strip { display: flex; justify-content: center; gap: 1.25rem; margin-top: 1.1rem; flex-wrap: wrap; position: relative; font-size: 0.78rem; color: rgba(255,255,255,0.85); font-weight: 600; }
@@ -316,6 +319,16 @@ const STYLES = `
   .addon-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .addon-btn { background: rgba(245,197,66,0.1); border: 1px solid rgba(245,197,66,0.4); color: var(--yellow); font-size: 0.78rem; font-weight: 700; padding: 0.5rem 0.8rem; border-radius: 20px; cursor: pointer; }
   .wa-btn { display: inline-block; margin-top: 0.5rem; background: #25D366; color: #08340f; font-size: 0.78rem; font-weight: 800; padding: 0.4rem 0.9rem; border-radius: 20px; text-decoration: none; }
+  .analytics-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
+  .analytics-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1rem; text-align: center; }
+  .analytics-num { font-family: 'Bangers', cursive; font-size: 1.8rem; color: var(--yellow); letter-spacing: 1px; }
+  .analytics-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+  .analytics-chart-title { font-size: 0.85rem; font-weight: 800; color: rgba(255,255,255,0.6); margin-bottom: 0.8rem; }
+  .analytics-chart { display: flex; align-items: flex-end; gap: 0.4rem; height: 140px; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 1rem 0.8rem 0.6rem; }
+  .analytics-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .analytics-bar { width: 100%; max-width: 22px; background: var(--yellow); border-radius: 4px 4px 0 0; position: relative; display: flex; align-items: flex-start; justify-content: center; }
+  .analytics-bar-count { position: absolute; top: -18px; font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 800; }
+  .analytics-bar-label { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 0.4rem; }
   .hours-info { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
   .hours-info-title { font-family: 'Bangers',cursive; font-size: 1rem; color: var(--yellow); letter-spacing: 1px; margin-bottom: 0.6rem; }
   .hours-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
@@ -732,12 +745,14 @@ function MenuPage() {
         {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
       </div>
       <div className="hero">
-        <div className="hero-badge">🔥 Fresh Made to Order · Walsall</div>
+        <div className="hero-badge">🔥 Fresh Made to Order · Wednesbury</div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={110} /></div>
         <h1>TEE<span>BAKES</span></h1>
         <div className="hero-sub">Freshly Baked Every Weekend</div>
-        <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Walsall.</p>
+        <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
+        <a href="mailto:teeebaaakes@gmail.com?subject=Mobile%20Trailer%20Booking%20Enquiry" className="hero-trailer-link">🚚 Book our mobile trailer for any event</a>
         <button className="hero-cta" onClick={() => document.getElementById("menu")?.scrollIntoView({behavior:"smooth"})}>Order Now</button>
+        <div className="hero-contact">✉️ <a href="mailto:teeebaaakes@gmail.com">teeebaaakes@gmail.com</a></div>
         <div className="hero-pills">
           <span className="hero-pill">🍩 Loaded Donuts</span>
           <span className="hero-pill">🥧 Cookie Pies</span>
@@ -1358,6 +1373,68 @@ function AdminCustomers() {
   );
 }
 
+function AdminAnalytics() {
+  const [views, setViews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("page_views").select("created_at").order("created_at",{ascending:false}).then(({ data, error }) => {
+      if (!error && data) setViews(data);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading analytics...</div>;
+
+  const now = new Date();
+  const startOfDay = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+  const today = startOfDay(now);
+  const daysAgo = n => new Date(today.getTime() - n*86400000);
+
+  const countSince = d => views.filter(v => new Date(v.created_at) >= d).length;
+  const todayCount = countSince(today);
+  const week = countSince(daysAgo(6));
+  const month = countSince(daysAgo(29));
+  const allTime = views.length;
+
+  // last 14 days, oldest first
+  const byDay = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = daysAgo(i);
+    byDay[d.toDateString()] = 0;
+  }
+  views.forEach(v => {
+    const key = startOfDay(v.created_at).toDateString();
+    if (key in byDay) byDay[key] += 1;
+  });
+  const maxDay = Math.max(1, ...Object.values(byDay));
+
+  return (
+    <div>
+      <div className="analytics-cards">
+        <div className="analytics-card"><div className="analytics-num">{todayCount}</div><div className="analytics-label">Today</div></div>
+        <div className="analytics-card"><div className="analytics-num">{week}</div><div className="analytics-label">Last 7 Days</div></div>
+        <div className="analytics-card"><div className="analytics-num">{month}</div><div className="analytics-label">Last 30 Days</div></div>
+        <div className="analytics-card"><div className="analytics-num">{allTime}</div><div className="analytics-label">All Time</div></div>
+      </div>
+      <div className="analytics-chart-title">Last 14 Days</div>
+      <div className="analytics-chart">
+        {Object.entries(byDay).map(([day, count]) => (
+          <div key={day} className="analytics-bar-col" title={`${day}: ${count} visit${count!==1?"s":""}`}>
+            <div className="analytics-bar" style={{height:`${Math.max(4,(count/maxDay)*100)}%`}}>
+              {count > 0 && <span className="analytics-bar-count">{count}</span>}
+            </div>
+            <div className="analytics-bar-label">{new Date(day).toLocaleDateString("en-GB",{weekday:"short"}).slice(0,2)}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{color:"rgba(255,255,255,0.35)",fontSize:"0.75rem",marginTop:"1rem"}}>
+        Counts every time the site loads (excludes visits with ?admin in the link). Anonymous — no cookies, no personal data collected.
+      </div>
+    </div>
+  );
+}
+
 function AdminPage() {
   const [tab, setTab] = useState("orders");
   const { storePaused, setStorePaused } = useContext(MenuStateContext);
@@ -1366,15 +1443,16 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"📋 Orders"},{id:"customers",label:"👥 Customers"},{id:"menu",label:"🍩 Menu"}].map(t =>
+        {[{id:"orders",label:"📋 Orders"},{id:"customers",label:"👥 Customers"},{id:"analytics",label:"📊 Analytics"},{id:"menu",label:"🍩 Menu"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
         <button className="admin-nav-btn" style={{marginTop:"1rem",opacity:0.7}} onClick={handleLogout}>🚪 Log Out</button>
       </div>
       <div className="admin-main">
-        <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":"MENU MANAGER"}</div>
+        <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":"MENU MANAGER"}</div>
         {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} />}
         {tab==="customers" && <AdminCustomers />}
+        {tab==="analytics" && <AdminAnalytics />}
         {tab==="menu" && <AdminMenu />}
       </div>
     </div>
@@ -1424,7 +1502,12 @@ function AppInner() {
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
-  useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Walsall"; }, []);
+  useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Wednesbury"; }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.location.search.includes("admin")) {
+      supabase.from("page_views").insert({}).then(() => {});
+    }
+  }, []);
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { setAdminUnlocked(!!data?.session); setAuthChecked(true); });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => { setAdminUnlocked(!!session); });
