@@ -1464,14 +1464,28 @@ function AdminPinLock({ onUnlock }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   async function handleSubmit() {
     if (!email || !password) return;
     setLoading(true);
     setError("");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
     setLoading(false);
-    if (error) { setError("❌ Wrong email or password"); return; }
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        setError("❌ Wrong email or password");
+      } else if (error.message.includes("rate limit") || error.status === 429) {
+        setError("⏳ Too many attempts — wait a minute and try again");
+      } else if (error.message.includes("Email not confirmed")) {
+        setError("⚠️ This account isn't confirmed yet — check Supabase Auth settings");
+      } else {
+        setError(`⚠️ ${error.message}`);
+      }
+      return;
+    }
     if (data?.session) onUnlock();
   }
 
@@ -1481,10 +1495,11 @@ function AdminPinLock({ onUnlock }) {
         <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔒</div>
         <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.8rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"0.5rem"}}>ADMIN ACCESS</div>
         <div style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem",marginBottom:"1.5rem"}}>Sign in to continue</div>
-        <input type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Email"
+        <input type="email" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck="false" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Email"
           style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:"2px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1rem",outline:"none",marginBottom:"0.7rem",boxSizing:"border-box"}} />
-        <input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Password"
+        <input type={showPw?"text":"password"} autoComplete="current-password" autoCapitalize="none" autoCorrect="off" spellCheck="false" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder="Password"
           style={{width:"100%",padding:"0.9rem",borderRadius:"10px",textAlign:"center",border:`2px solid ${error?"#e06060":"rgba(255,255,255,0.15)"}`,background:"rgba(255,255,255,0.05)",color:"white",fontFamily:"'Nunito',sans-serif",fontSize:"1rem",outline:"none",marginBottom:"1rem",boxSizing:"border-box"}} />
+        <button type="button" onClick={()=>setShowPw(s=>!s)} style={{background:"none",border:"none",color:"var(--yellow)",fontSize:"0.8rem",cursor:"pointer",marginTop:"-0.6rem",marginBottom:"1rem",display:"block",width:"100%"}}>{showPw?"🙈 Hide password":"👁️ Show password"}</button>
         {error && <div style={{color:"#e06060",fontSize:"0.85rem",marginBottom:"0.8rem"}}>{error}</div>}
         <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"0.9rem",background:"var(--yellow)",color:"var(--dark)",border:"none",borderRadius:"10px",cursor:"pointer",fontFamily:"'Bangers',cursive",fontSize:"1.2rem",letterSpacing:"2px",opacity:loading?0.6:1}}>{loading?"SIGNING IN...":"SIGN IN"}</button>
       </div>
