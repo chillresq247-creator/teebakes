@@ -279,6 +279,8 @@ const STYLES = `
     --green: #4fa84b; --purple: #2d1b69; --red: #e06060;
   }
   body { background: var(--dark); color: var(--white); font-family: 'Nunito', sans-serif; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .hero-logo-img { width: clamp(140px, 42vw, 220px); height: auto; display: block; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.45)); }
   .app { min-height: 100vh; }
   .nav { position: sticky; top: 0; z-index: 100; background: var(--dark); border-bottom: 3px solid var(--yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 64px; }
   .nav-logo { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
@@ -548,35 +550,18 @@ const STYLES = `
   @media (max-width: 500px) { .cart-drawer { width: 100%; } .admin-layout { flex-direction: column; } .admin-sidebar { width: 100%; } }
 `;
 
-let _logoId = 0;
-function TeeBakesLogo({ size = 48 }) {
-  const [uid] = useState(() => `tb${++_logoId}`);
-  const clipId = `${uid}c`, yellowId = `${uid}y`, mintId = `${uid}m`;
+function TeeBakesLogo({ size = 48, priority = false, className = "" }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 200 200" style={{ display:"block", flexShrink:0 }}>
-      <defs>
-        <clipPath id={clipId}><circle cx="100" cy="105" r="88" /></clipPath>
-        <radialGradient id={yellowId} cx="55%" cy="40%" r="55%"><stop offset="0%" stopColor="#fff176" /><stop offset="100%" stopColor="#f9c900" /></radialGradient>
-        <radialGradient id={mintId} cx="50%" cy="50%" r="55%"><stop offset="0%" stopColor="#b2dfce" /><stop offset="100%" stopColor="#7ec8a8" /></radialGradient>
-      </defs>
-      <circle cx="100" cy="105" r="91" fill="#f48fb1" />
-      <circle cx="100" cy="105" r="87" fill="#1a237e" />
-      <ellipse cx="115" cy="82" rx="70" ry="60" fill={`url(#${yellowId})`} clipPath={`url(#${clipId})`} />
-      <rect x="-10" y="108" width="230" height="52" fill={`url(#${mintId})`} transform="rotate(-8 100 130)" clipPath={`url(#${clipId})`} />
-      <rect x="-10" y="118" width="230" height="38" fill="#1a237e" transform="rotate(-8 100 135)" clipPath={`url(#${clipId})`} />
-      <ellipse cx="108" cy="174" rx="72" ry="11" fill="#f48fb1" clipPath={`url(#${clipId})`} />
-      <ellipse cx="108" cy="172" rx="72" ry="9" fill="#f8bbd0" clipPath={`url(#${clipId})`} />
-      <ellipse cx="42" cy="112" rx="28" ry="9" fill="#5d2e0c" /><ellipse cx="42" cy="109" rx="28" ry="9" fill="#a0522d" /><ellipse cx="42" cy="108" rx="28" ry="8.5" fill="#cd853f" />
-      <circle cx="32" cy="106" r="3" fill="#3b1a06" opacity="0.85" /><circle cx="43" cy="104" r="3" fill="#3b1a06" opacity="0.85" /><circle cx="54" cy="106" r="2.5" fill="#3b1a06" opacity="0.85" />
-      <ellipse cx="40" cy="97" rx="26" ry="8.5" fill="#5d2e0c" /><ellipse cx="40" cy="94" rx="26" ry="8.5" fill="#b8621a" /><ellipse cx="40" cy="93" rx="26" ry="8" fill="#d4832a" />
-      <circle cx="30" cy="91" r="2.8" fill="#3b1a06" opacity="0.85" /><circle cx="41" cy="89" r="2.8" fill="#3b1a06" opacity="0.85" /><circle cx="52" cy="91" r="2.5" fill="#3b1a06" opacity="0.85" />
-      <ellipse cx="38" cy="82" rx="24" ry="8" fill="#5d2e0c" /><ellipse cx="38" cy="79" rx="24" ry="8" fill="#c97c1e" /><ellipse cx="38" cy="78" rx="24" ry="7.5" fill="#e8a030" />
-      <circle cx="29" cy="76" r="2.5" fill="#3b1a06" opacity="0.85" /><circle cx="39" cy="74" r="2.5" fill="#3b1a06" opacity="0.85" /><circle cx="50" cy="76" r="2.2" fill="#3b1a06" opacity="0.85" />
-      <text x="78" y="122" fontFamily="Georgia, serif" fontSize="32" fontWeight="900" fontStyle="italic" fill="white" stroke="#1a237e" strokeWidth="3" paintOrder="stroke" textAnchor="middle" letterSpacing="-0.5">TeeBakes</text>
-      <text x="108" y="150" fontFamily="Georgia, serif" fontSize="22" fontWeight="900" fontStyle="italic" fill="white" stroke="#1a237e" strokeWidth="2.5" paintOrder="stroke" textAnchor="middle">Specialty Bakes</text>
-      <circle cx="100" cy="105" r="88" fill="none" stroke="#f48fb1" strokeWidth="5" />
-      <circle cx="100" cy="105" r="82" fill="none" stroke="#f8bbd0" strokeWidth="1.5" opacity="0.5" />
-    </svg>
+    <img
+      src="/logo-icon.png"
+      alt="TeeBakes"
+      width={size}
+      height={size}
+      className={className}
+      style={className ? undefined : { display: "block", flexShrink: 0, width: size, height: size, objectFit: "contain" }}
+      loading={priority ? "eager" : "lazy"}
+      {...(priority ? { fetchpriority: "high" } : {})}
+    />
   );
 }
 
@@ -746,8 +731,8 @@ function MenuPage() {
       </div>
       <div className="hero">
         <div className="hero-badge">🔥 Fresh Made to Order · Wednesbury</div>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={110} /></div>
-        <h1>TEE<span>BAKES</span></h1>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={220} priority className="hero-logo-img" /></div>
+        <h1 className="sr-only">TeeBakes</h1>
         <div className="hero-sub">Freshly Baked Every Weekend</div>
         <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
         <a href="mailto:teeebaaakes@gmail.com?subject=Mobile%20Trailer%20Booking%20Enquiry" className="hero-trailer-link">🚚 Book our mobile trailer for any event</a>
@@ -1534,7 +1519,7 @@ function AppInner() {
       <style>{STYLES}</style>
       <nav className="nav">
         <div className="nav-logo" onClick={() => setPage("menu")}>
-          <TeeBakesLogo size={48} />
+          <TeeBakesLogo size={52} priority />
           <div className="logo-text-block">
             <div className="logo-text">TeeBakes</div>
             <div className="logo-sub">Specialty Bakes</div>
