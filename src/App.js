@@ -807,6 +807,7 @@ function CheckoutPage({ onBack, onConfirm }) {
   const [asap, setAsap] = useState(false);
   const [form, setForm] = useState({ name:"", email:"", phone:"", address:"", notes:"" });
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const deliveryFee = type === "delivery" ? 2.50 : 0;
   const orderTotal = total + deliveryFee;
@@ -817,28 +818,47 @@ function CheckoutPage({ onBack, onConfirm }) {
 
   async function handleSubmit() {
     setSubmitting(true);
+    setSubmitError(false);
     const orderId = "TB-" + Math.random().toString(36).substr(2,6).toUpperCase();
     const timeLabel = asap ? "ASAP" : selTime;
-    const { error } = await supabase.from("orders").insert({
+    const orderPayload = {
       id: orderId, customer_name: form.name, customer_email: form.email,
       customer_phone: form.phone, items: cart, total: orderTotal, type,
       delivery_address: form.address || null, date: selDateLabel, time: timeLabel,
       payment_method: "sumup", order_status: "new", notes: form.notes || null,
-    });
-    if (error) console.error("Supabase error:", error);
+    };
+
+    let saved = false;
+    let lastError = null;
+    for (let attempt = 0; attempt < 2 && !saved; attempt++) {
+      const { error } = await supabase.from("orders").insert(orderPayload);
+      if (!error) { saved = true; }
+      else {
+        lastError = error;
+        console.error(`Supabase order insert failed (attempt ${attempt + 1}):`, error);
+        if (attempt === 0) await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+
+    // Always try to notify by email — this is our safety net if the database write failed
     try {
       await fetch("https://api.web3forms.com/submit", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
-          subject: `📦 New TeeBakes Order — ${orderId}`,
+          subject: saved ? `📦 New TeeBakes Order — ${orderId}` : `⚠️ ORDER FAILED TO SAVE — ${orderId} (add manually)`,
           name: form.name, email: form.email,
-          message: `New order!\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
+          message: `${saved ? "New order!" : `⚠️ This order did NOT save to the admin panel (database error: ${lastError?.message || "unknown"}). Please add it manually and follow up with the customer.\n`}\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
         })
       });
     } catch(e) { console.error("Email error:", e); }
+
     setSubmitting(false);
-    onConfirm({ orderId, ...form, type, date: selDateLabel, time: timeLabel, isAsap: asap, items: cart, total: orderTotal });
+    if (saved) {
+      onConfirm({ orderId, ...form, type, date: selDateLabel, time: timeLabel, isAsap: asap, items: cart, total: orderTotal });
+    } else {
+      setSubmitError(true);
+    }
   }
 
   if (storePaused) {
@@ -930,6 +950,14 @@ function CheckoutPage({ onBack, onConfirm }) {
             )}
             <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER →"}</button>
             {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
+            {submitError && (
+              <div style={{marginTop:"0.9rem",padding:"0.9rem",background:"rgba(255,80,80,0.1)",border:"1px solid rgba(255,80,80,0.4)",borderRadius:"8px",fontSize:"0.82rem",color:"#ffb3b3",textAlign:"center"}}>
+                ⚠️ Something went wrong saving your order. Please tap "Place Order" again — if it keeps failing, message us directly at <strong>teeebaaakes@gmail.com</strong> with your order details so we don't miss it.
+              </div>
+            )}
+            <div style={{marginTop:"0.9rem",padding:"0.8rem",background:"rgba(245,197,66,0.07)",border:"1px solid rgba(245,197,66,0.25)",borderRadius:"8px",fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",textAlign:"center"}}>
+              ⚠️ Your order is only confirmed once payment is completed via SumUp on the next screen. Orders left unpaid will not be prepared.
+            </div>
           </div>
         </div>
       </div>
@@ -943,10 +971,10 @@ function ConfirmationPage({ order, onBackToMenu }) {
   return (
     <div className="confirmation">
       <div className="confirm-icon">🎉</div>
-      <div className="confirm-title">ORDER PLACED!</div>
+      <div className="confirm-title">ORDER RECEIVED</div>
       <div className="confirm-sub">
-        Thanks {order.name.split(" ")[0]}! Your order is confirmed.<br />
-        <span style={{color:"var(--yellow)",fontWeight:700}}>Now complete your payment below to secure it.</span>
+        Thanks {order.name.split(" ")[0]}! We've got your order details.<br />
+        <span style={{color:"var(--yellow)",fontWeight:700}}>⚠️ It will NOT be prepared until you complete payment below.</span>
       </div>
       <div className="confirm-card">
         {[["Order ID",order.orderId],["Type",order.type==="collection"?"🏪 Collection":"🚗 Delivery"],["Date",order.date],["Time",order.isAsap?"⚡ ASAP":order.time],["Total",`£${order.total.toFixed(2)}`]].map(([l,v]) => (
@@ -958,6 +986,9 @@ function ConfirmationPage({ order, onBackToMenu }) {
         <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
         <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
           When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
+        </div>
+        <div style={{fontSize:"0.78rem",color:"#ff9797",margin:"0 0 12px",textAlign:"center",fontWeight:700}}>
+          Your order will not be made unless payment is received.
         </div>
         <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
           PAY £{order.total.toFixed(2)} ON SUMUP →
