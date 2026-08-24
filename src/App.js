@@ -95,7 +95,7 @@ function isTodayLive() {
   const now = new Date();
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
 }
-const PAYMENT_WORKER_URL = "https://teebakes-payments.YOUR-SUBDOMAIN.workers.dev";
+const PAYMENT_WORKER_URL = "https://teebakes-payments.teeebaaakes.workers.dev";
 function getSumUpPaymentLink(amount, orderId) {
   // Manual fallback link — only used if the automatic checkout can't be created
   return `https://pay.sumup.com/b2c/QZ9ZMUVG?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
