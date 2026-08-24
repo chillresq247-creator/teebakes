@@ -95,8 +95,31 @@ function isTodayLive() {
   const now = new Date();
   return LIVE_DAYS.includes(now.getDay()) && now.getHours() >= 13 && now.getHours() < 23;
 }
+const PAYMENT_WORKER_URL = "https://teebakes-payments.YOUR-SUBDOMAIN.workers.dev";
 function getSumUpPaymentLink(amount, orderId) {
+  // Manual fallback link — only used if the automatic checkout can't be created
   return `https://pay.sumup.com/b2c/QZ9ZMUVG?amount=${amount.toFixed(2)}&currency=GBP&description=TeeBakes+Order+${orderId}`;
+}
+async function createSumUpCheckout(amount, orderId, email) {
+  const res = await fetch(`${PAYMENT_WORKER_URL}/create-checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount, orderId, email }),
+  });
+  if (!res.ok) throw new Error("checkout creation failed");
+  const data = await res.json();
+  if (!data.url) throw new Error("no checkout url returned");
+  return data.url;
+}
+async function checkSumUpPaid(orderId) {
+  try {
+    const res = await fetch(`${PAYMENT_WORKER_URL}/status?orderId=${encodeURIComponent(orderId)}`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return !!data.paid;
+  } catch {
+    return false;
+  }
 }
 function getQRCodeUrl(text) {
   return `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(text)}&choe=UTF-8`;
@@ -966,8 +989,21 @@ function CheckoutPage({ onBack, onConfirm }) {
 }
 
 function ConfirmationPage({ order, onBackToMenu }) {
-  const paymentLink = getSumUpPaymentLink(order.total, order.orderId);
-  const qrUrl = getQRCodeUrl(paymentLink);
+  const [payUrl, setPayUrl] = useState(null);
+  const [payError, setPayError] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem("tb_pending_order", JSON.stringify(order)); } catch {}
+    let cancelled = false;
+    createSumUpCheckout(order.total, order.orderId, order.email)
+      .then(url => { if (!cancelled) setPayUrl(url); })
+      .catch(() => {
+        if (!cancelled) { setPayUrl(getSumUpPaymentLink(order.total, order.orderId)); setPayError(true); }
+      });
+    return () => { cancelled = true; };
+  }, [order]);
+
+  const qrUrl = payUrl ? getQRCodeUrl(payUrl) : null;
   return (
     <div className="confirmation">
       <div className="confirm-icon">🎉</div>
@@ -984,25 +1020,56 @@ function ConfirmationPage({ order, onBackToMenu }) {
       <div className="pay-section">
         <div className="pay-title">💳 COMPLETE PAYMENT</div>
         <div className="pay-amount">£<span>{order.total.toFixed(2)}</span></div>
-        <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
-          When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
-        </div>
+        {payError ? (
+          <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
+            When SumUp opens, enter <strong>the full amount shown here</strong> to complete your order.
+          </div>
+        ) : (
+          <div style={{fontSize:"0.82rem",color:"#888",margin:"12px 0",textAlign:"center"}}>
+            The exact amount is already set — just tap below and pay, nothing to type.
+          </div>
+        )}
         <div style={{fontSize:"0.78rem",color:"#ff9797",margin:"0 0 12px",textAlign:"center",fontWeight:700}}>
           Your order will not be made unless payment is received.
         </div>
-        <a href={paymentLink} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
-          PAY £{order.total.toFixed(2)} ON SUMUP →
-        </a>
-        <div className="pay-divider">
-          <div className="pay-divider-line"></div>
-          <div className="pay-divider-text">OR SCAN QR CODE</div>
-          <div className="pay-divider-line"></div>
-        </div>
-        <div className="qr-wrap">
-          <img src={qrUrl} alt="Scan to pay" className="qr-img" />
-          <div className="qr-label">Scan with your phone camera to pay</div>
-        </div>
+        {payUrl ? (
+          <a href={payUrl} className="pay-now-btn" target="_blank" rel="noopener noreferrer">
+            PAY £{order.total.toFixed(2)} ON SUMUP →
+          </a>
+        ) : (
+          <div className="pay-now-btn" style={{opacity:0.6,pointerEvents:"none"}}>Preparing secure payment…</div>
+        )}
+        {qrUrl && <>
+          <div className="pay-divider">
+            <div className="pay-divider-line"></div>
+            <div className="pay-divider-text">OR SCAN QR CODE</div>
+            <div className="pay-divider-line"></div>
+          </div>
+          <div className="qr-wrap">
+            <img src={qrUrl} alt="Scan to pay" className="qr-img" />
+            <div className="qr-label">Scan with your phone camera to pay</div>
+          </div>
+        </>}
         <div className="pay-note">🔒 Secure payment powered by SumUp<br />Your order reference: {order.orderId}</div>
+      </div>
+      <button className="back-btn" onClick={onBackToMenu}>ORDER MORE 🍩</button>
+    </div>
+  );
+}
+
+function PaymentConfirmedPage({ order, onBackToMenu }) {
+  return (
+    <div className="confirmation">
+      <div className="confirm-icon">✅</div>
+      <div className="confirm-title">PAYMENT RECEIVED</div>
+      <div className="confirm-sub">
+        Thanks {order.name?.split(" ")[0] || "there"}! Your payment went through and your order is confirmed.<br />
+        We'll have it ready for you — see you then!
+      </div>
+      <div className="confirm-card">
+        {[["Order ID",order.orderId],["Type",order.type==="collection"?"🏪 Collection":"🚗 Delivery"],["Date",order.date],["Time",order.isAsap?"⚡ ASAP":order.time],["Total",`£${Number(order.total).toFixed(2)}`]].map(([l,v]) => (
+          <div key={l} className="confirm-row"><span className="confirm-label">{l}</span><span className="confirm-value">{v}</span></div>
+        ))}
       </div>
       <button className="back-btn" onClick={onBackToMenu}>ORDER MORE 🍩</button>
     </div>
@@ -1527,10 +1594,28 @@ function AppInner() {
   const [page, setPage] = useState("menu");
   const [cartOpen, setCartOpen] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const [paidOrder, setPaidOrder] = useState(null);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const { count, dispatch } = useContext(CartContext);
   const showAdminBtn = typeof window !== "undefined" && window.location.search.includes("admin");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const paidId = params.get("paid");
+    if (!paidId) return;
+    window.history.replaceState({}, "", window.location.pathname);
+    let savedOrder = null;
+    try { savedOrder = JSON.parse(localStorage.getItem("tb_pending_order") || "null"); } catch {}
+    checkSumUpPaid(paidId).then(paid => {
+      if (paid) {
+        setPaidOrder(savedOrder && savedOrder.orderId === paidId ? savedOrder : { orderId: paidId, name: "" });
+        setPage("paid");
+        try { localStorage.removeItem("tb_pending_order"); } catch {}
+      }
+    });
+  }, []);
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
   useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Wednesbury"; }, []);
@@ -1573,6 +1658,9 @@ function AppInner() {
       )}
       {page==="confirmation" && confirmedOrder && (
         <ConfirmationPage order={confirmedOrder} onBackToMenu={() => { setPage("menu"); setConfirmedOrder(null); }} />
+      )}
+      {page==="paid" && paidOrder && (
+        <PaymentConfirmedPage order={paidOrder} onBackToMenu={() => { setPage("menu"); setPaidOrder(null); }} />
       )}
       {page==="admin" && (!authChecked ? <div style={{minHeight:"100vh",background:"var(--dark)"}} /> : (adminUnlocked ? <AdminPage /> : <AdminPinLock onUnlock={() => setAdminUnlocked(true)} />))}
       {cartOpen && (
