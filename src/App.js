@@ -39,6 +39,9 @@ const FALLBACK_MENU = [
   { id:"cp-mm-pie", category:"Cookie Pie", name:"M&M Cookie Pie Slice", price:3.00, badge:null, description:"Soft golden cookie pie studded with M&Ms, drizzled with milk chocolate. Fun, colourful and delicious.", allergens:["gluten","eggs","dairy","soy"], emoji:"🥧", bg:"#3d6b35", available:true, options:{"How would you like it?":["Cold — £3.00","Warm with sauce — £3.50"]}, image_url:null },
   { id:"cp-whole", category:"Cookie Pie", name:"Whole Cookie Pie", price:25.00, badge:"Pre-Order", notice:"⚠️ 24 HOURS NOTICE REQUIRED", description:"Order a whole cookie pie made fresh for you. Perfect for sharing — serves 6–8 people. Choose your flavour below.", allergens:["gluten","eggs","dairy"], emoji:"🥧", bg:"#2d1b69", available:true, options:{"Choose Flavour":["Triple Chocolate","Biscoff","Oreo","M&M","Mixed / Custom"]}, image_url:null },
   { id:"cc-main", category:"Cookie Cup", name:"Cookie Cup", price:3.00, badge:"New", description:"Individual cookie baked into a cup shape, filled with chocolate ganache and topped with your choice of topping.", allergens:["gluten","eggs","dairy"], emoji:"🍪", bg:"#6b3fa0", available:true, options:{"Choose Topping":["Lotus & Biscoff","Oreo & Choc","M&M & Caramel","Cadbury & Caramel","Easter Eggs & Choc"]}, image_url:null },
+  { id:"car-mutton", category:"Caribbean", name:"Curry Mutton", price:12.00, badge:null, description:"Tender mutton slow-cooked in authentic curry spices, served with steamed veg and your choice of rice & peas or white rice.", allergens:[], emoji:"🍛", bg:"#5c2c0c", available:true, options:{"Choose Your Side":["Rice & Peas","White Rice"]}, image_url:null },
+  { id:"car-jerk", category:"Caribbean", name:"Jerk Chicken", price:10.00, badge:null, description:"Chicken marinated in spicy jerk seasoning, served with steamed veg and your choice of rice & peas or white rice.", allergens:[], emoji:"🔥", bg:"#7a1f1f", available:true, options:{"Choose Your Side":["Rice & Peas","White Rice"]}, image_url:null },
+  { id:"car-curry-chicken", category:"Caribbean", name:"Curry Chicken", price:10.00, badge:null, description:"Chicken cooked in traditional Caribbean curry, served with steamed veg and your choice of rice & peas or white rice.", allergens:[], emoji:"🍛", bg:"#a86c1d", available:true, options:{"Choose Your Side":["Rice & Peas","White Rice"]}, image_url:null },
 ];
 
 const LIVE_DAYS = [5, 6, 0];
@@ -734,6 +737,7 @@ function MenuPage() {
     { id:"Cookie Cup", label:"🍪 Cookie Cups" },
     { id:"Cookie Pie", label:"🥧 Cookie Pies" },
     { id:"Donut", label:"🍩 Donuts" },
+    { id:"Caribbean", label:"🍛 Caribbean" },
     { id:"Extra", label:"✨ Extras" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
@@ -1256,7 +1260,7 @@ function AdminMenu() {
     else showToast("❌ Enter a valid name", "error");
   }
 
-  const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Extra",label:"✨ Extras"}];
+  const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Caribbean",label:"🍛 Caribbean"},{id:"Extra",label:"✨ Extras"}];
 
   return (
     <div>
@@ -1280,6 +1284,7 @@ function AdminMenu() {
               <option value="Donut">🍩 Donut</option>
               <option value="Cookie Pie">🥧 Cookie Pie</option>
               <option value="Cookie Cup">🍪 Cookie Cup</option>
+              <option value="Caribbean">🍛 Caribbean</option>
               <option value="Extra">✨ Extra</option>
             </select>
           </div>
