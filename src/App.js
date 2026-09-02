@@ -762,6 +762,7 @@ function MenuPage() {
         <h1 className="sr-only">TeeBakes</h1>
         <div className="hero-sub">Freshly Baked Every Weekend</div>
         <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
+        <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
         <a href="mailto:teeebaaakes@gmail.com?subject=Mobile%20Trailer%20Booking%20Enquiry" className="hero-trailer-link">🚚 Book our mobile trailer for any event</a>
         <button className="hero-cta" onClick={() => document.getElementById("menu")?.scrollIntoView({behavior:"smooth"})}>Order Now</button>
         <div className="hero-contact">✉️ <a href="mailto:teeebaaakes@gmail.com">teeebaaakes@gmail.com</a></div>
@@ -769,6 +770,7 @@ function MenuPage() {
           <span className="hero-pill">🍩 Loaded Donuts</span>
           <span className="hero-pill">🥧 Cookie Pies</span>
           <span className="hero-pill">🍪 Cookie Cups</span>
+          <span className="hero-pill">🍛 Caribbean</span>
           <span className="hero-pill">🚗 Delivery Available</span>
         </div>
         <div className="trust-strip">
@@ -1623,7 +1625,7 @@ function AppInner() {
   }, []);
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
-  useEffect(() => { document.title = "TeeBakes — Fresh Donuts & Cookie Pies | Wednesbury"; }, []);
+  useEffect(() => { document.title = "TeeBakes — Donuts, Cookie Pies & Caribbean Food | Wednesbury"; }, []);
   useEffect(() => {
     if (typeof window !== "undefined" && !window.location.search.includes("admin")) {
       supabase.from("page_views").insert({}).then(() => {});
