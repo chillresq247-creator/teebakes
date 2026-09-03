@@ -136,15 +136,18 @@ const MenuStateContext = createContext();
 function MenuStateProvider({ children }) {
   const [menuItems, setMenuItems] = useState([]);
   const [storePaused, setStorePausedState] = useState(false);
+  const [pauseReason, setPauseReasonState] = useState("");
+  const [caribbeanEnabled, setCaribbeanEnabledState] = useState(true);
+  const [caribbeanReason, setCaribbeanReasonState] = useState("");
   const [menuLoading, setMenuLoading] = useState(true);
 
   // Load menu from Supabase on mount
   useEffect(() => {
   loadMenuFromSupabase();
-  loadStorePauseState();
+  loadSettings();
   const interval = setInterval(() => {
     loadMenuFromSupabase();
-    loadStorePauseState();
+    loadSettings();
   }, 30000);
   return () => clearInterval(interval);
 }, []);
@@ -189,19 +192,30 @@ function MenuStateProvider({ children }) {
     }
   }
 
-  async function loadStorePauseState() {
-    const { data } = await supabase
-      .from("store_settings")
-      .select("value")
-      .eq("key", "store_paused")
-      .single();
-    if (data) setStorePausedState(data.value === "true");
+  async function loadSettings() {
+    const { data } = await supabase.from("store_settings").select("key,value");
+    if (!data) return;
+    const map = Object.fromEntries(data.map(r => [r.key, r.value]));
+    setStorePausedState(map.store_paused === "true");
+    setPauseReasonState(map.pause_reason || "");
+    setCaribbeanEnabledState(map.caribbean_enabled !== "false");
+    setCaribbeanReasonState(map.caribbean_reason || "");
   }
 
-  async function setStorePaused(paused) {
+  async function setStorePaused(paused, reason) {
     setStorePausedState(paused);
-    await supabase.from("store_settings")
-      .upsert({ key: "store_paused", value: String(paused), updated_at: new Date().toISOString() });
+    if (reason !== undefined) setPauseReasonState(reason);
+    const rows = [{ key: "store_paused", value: String(paused), updated_at: new Date().toISOString() }];
+    if (reason !== undefined) rows.push({ key: "pause_reason", value: reason, updated_at: new Date().toISOString() });
+    await supabase.from("store_settings").upsert(rows);
+  }
+
+  async function setCaribbeanEnabled(enabled, reason) {
+    setCaribbeanEnabledState(enabled);
+    if (reason !== undefined) setCaribbeanReasonState(reason);
+    const rows = [{ key: "caribbean_enabled", value: String(enabled), updated_at: new Date().toISOString() }];
+    if (reason !== undefined) rows.push({ key: "caribbean_reason", value: reason, updated_at: new Date().toISOString() });
+    await supabase.from("store_settings").upsert(rows);
   }
 
   async function toggleItem(id) {
@@ -283,12 +297,13 @@ function MenuStateProvider({ children }) {
     return true;
   }
 
-  const availableItems = menuItems.filter(i => i.available);
+  const availableItems = menuItems.filter(i => i.available && (caribbeanEnabled || i.category !== "Caribbean"));
 
   return (
     <MenuStateContext.Provider value={{
       menuItems, availableItems, toggleItem, menuLoading,
-      storePaused, setStorePaused,
+      storePaused, setStorePaused, pauseReason,
+      caribbeanEnabled, setCaribbeanEnabled, caribbeanReason,
       addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName
     }}>
       {children}
@@ -728,7 +743,7 @@ function CartDrawer({ onClose, onCheckout }) {
 
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
-  const { availableItems, storePaused, menuLoading } = useContext(MenuStateContext);
+  const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, menuLoading } = useContext(MenuStateContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
@@ -737,7 +752,7 @@ function MenuPage() {
     { id:"Cookie Cup", label:"🍪 Cookie Cups" },
     { id:"Cookie Pie", label:"🥧 Cookie Pies" },
     { id:"Donut", label:"🍩 Donuts" },
-    { id:"Caribbean", label:"🍛 Caribbean" },
+    ...(caribbeanEnabled ? [{ id:"Caribbean", label:"🍛 Caribbean" }] : []),
     { id:"Extra", label:"✨ Extras" },
   ];
   const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
@@ -750,19 +765,23 @@ function MenuPage() {
       {storePaused && (
         <div className="store-closed-banner">
           <div className="store-closed-title">🔴 NOT TAKING ORDERS RIGHT NOW</div>
-          <div className="store-closed-sub">We'll be back soon — check our socials for updates</div>
+          <div className="store-closed-sub">{pauseReason || "We'll be back soon — check our socials for updates"}</div>
         </div>
       )}
       <div className={`status-banner ${todayLive && !storePaused ? "open" : "closed"}`}>
         {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
       </div>
       <div className="hero">
-        <div className="hero-badge">🔥 Fresh Made to Order · Wednesbury</div>
+        <div className="hero-badge">🔥 Collection from Darlaston / Wednesbury</div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={220} priority className="hero-logo-img" /></div>
         <h1 className="sr-only">TeeBakes</h1>
         <div className="hero-sub">Freshly Baked Every Weekend</div>
         <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
-        <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
+        {caribbeanEnabled ? (
+          <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
+        ) : caribbeanReason ? (
+          <p style={{color:"rgba(255,255,255,0.45)",fontSize:"0.85rem"}}>🍛 Caribbean menu paused this week — {caribbeanReason}</p>
+        ) : null}
         <a href="mailto:teeebaaakes@gmail.com?subject=Mobile%20Trailer%20Booking%20Enquiry" className="hero-trailer-link">🚚 Book our mobile trailer for any event</a>
         <button className="hero-cta" onClick={() => document.getElementById("menu")?.scrollIntoView({behavior:"smooth"})}>Order Now</button>
         <div className="hero-contact">✉️ <a href="mailto:teeebaaakes@gmail.com">teeebaaakes@gmail.com</a></div>
@@ -770,7 +789,7 @@ function MenuPage() {
           <span className="hero-pill">🍩 Loaded Donuts</span>
           <span className="hero-pill">🥧 Cookie Pies</span>
           <span className="hero-pill">🍪 Cookie Cups</span>
-          <span className="hero-pill">🍛 Caribbean</span>
+          {caribbeanEnabled && <span className="hero-pill">🍛 Caribbean</span>}
           <span className="hero-pill">🚗 Delivery Available</span>
         </div>
         <div className="trust-strip">
@@ -1085,10 +1104,13 @@ function PaymentConfirmedPage({ order, onBackToMenu }) {
 // ============================================================
 // ADMIN DASHBOARD
 // ============================================================
-function AdminDashboard({ storePaused, setStorePaused }) {
+function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [reasonDraft, setReasonDraft] = useState(pauseReason || "");
+  const [caribbeanReasonDraft, setCaribbeanReasonDraft] = useState(caribbeanReason || "");
+  const [eventReasonDraft, setEventReasonDraft] = useState(pauseReason || caribbeanReason || "");
   const prevCount = React.useRef(0);
 
   useEffect(() => { loadOrders(); const iv = setInterval(loadOrders,30000); return () => clearInterval(iv); }, []);
@@ -1104,26 +1126,102 @@ function AdminDashboard({ storePaused, setStorePaused }) {
     setLoading(false);
   }
 
-  async function updateStatus(id,status) {
+  async function updateStatus(id,status,order) {
     await supabase.from("orders").update({order_status:status}).eq("id",id);
     setOrders(os => os.map(o => o.id===id?{...o,order_status:status}:o));
+    if (status === "ready" && order?.customer_phone) {
+      const msg = order.type === "collection"
+        ? `Hi ${order.customer_name}, it's TeeBakes! 🎉 Your order ${order.id} is ready for collection whenever you're able to grab it!`
+        : `Hi ${order.customer_name}, it's TeeBakes! 🎉 Your order ${order.id} is ready and heading out for delivery soon!`;
+      window.open(waLink(order.customer_phone, msg), "_blank");
+    }
   }
 
   async function handlePauseToggle() {
-    await setStorePaused(!storePaused);
+    const next = !storePaused;
+    const reason = next ? reasonDraft : "";
+    if (!next) setReasonDraft("");
+    await setStorePaused(next, reason);
+  }
+
+  async function handleCaribbeanToggle() {
+    const next = !caribbeanEnabled;
+    const reason = !next ? caribbeanReasonDraft : "";
+    if (next) setCaribbeanReasonDraft("");
+    await setCaribbeanEnabled(next, reason);
+  }
+
+  const eventModeOn = storePaused;
+
+  async function handleEventModeOn() {
+    const reason = eventReasonDraft.trim() || "We're at an event this week!";
+    setEventReasonDraft(reason);
+    setReasonDraft(reason);
+    setCaribbeanReasonDraft(reason);
+    await setStorePaused(true, reason);
+    await setCaribbeanEnabled(false, reason);
+  }
+
+  async function handleEventModeOff() {
+    setEventReasonDraft("");
+    setReasonDraft("");
+    setCaribbeanReasonDraft("");
+    await setStorePaused(false, "");
+    await setCaribbeanEnabled(true, "");
   }
 
   const filtered = filter==="all" ? orders : orders.filter(o => o.order_status===filter);
 
   return (
     <div>
-      <div className={`pause-banner ${storePaused?"":"open-state"}`}>
-        <div>
+      <div className={`pause-banner ${eventModeOn?"":"open-state"}`} style={{border: eventModeOn ? "2px solid #ffb347" : "2px solid rgba(255,179,71,0.35)"}}>
+        <div style={{flex:1}}>
+          <div className="pause-banner-text">{eventModeOn ? "🎪 EVENT MODE — store closed, Caribbean hidden" : "🎪 Going to an event this week?"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>One tap pauses orders AND hides the Caribbean menu together, with one reason</div>
+          {!eventModeOn && (
+            <input
+              type="text"
+              placeholder="Reason customers will see (e.g. We're at an event this week!)"
+              value={eventReasonDraft}
+              onChange={e => setEventReasonDraft(e.target.value)}
+              style={{marginTop:"0.6rem",width:"100%",maxWidth:"420px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
+            />
+          )}
+        </div>
+        <button className={`pause-btn ${eventModeOn?"is-paused":"is-open"}`} onClick={eventModeOn ? handleEventModeOff : handleEventModeOn}>
+          {eventModeOn ? "✅ Back to Normal" : "🎪 We're at an Event"}
+        </button>
+      </div>
+      <div className={`pause-banner ${storePaused?"":"open-state"}`} style={{marginTop:"0.8rem"}}>
+        <div style={{flex:1}}>
           <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED — customers cannot order" : "🟢 Store is OPEN — accepting orders"}</div>
           <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Saved permanently — survives page refresh</div>
+          <input
+            type="text"
+            placeholder="Reason customers will see (e.g. We're at an event this week!)"
+            value={reasonDraft}
+            onChange={e => setReasonDraft(e.target.value)}
+            style={{marginTop:"0.6rem",width:"100%",maxWidth:"420px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
+          />
         </div>
         <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={handlePauseToggle}>
           {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
+        </button>
+      </div>
+      <div className={`pause-banner ${caribbeanEnabled?"open-state":""}`} style={{marginTop:"0.8rem"}}>
+        <div style={{flex:1}}>
+          <div className="pause-banner-text">{caribbeanEnabled ? "🟢 Caribbean menu is LIVE" : "🔴 Caribbean menu is HIDDEN from customers"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Doesn't affect donuts, cookies or cookie pies</div>
+          <input
+            type="text"
+            placeholder="Reason customers will see (e.g. We're at an event this week!)"
+            value={caribbeanReasonDraft}
+            onChange={e => setCaribbeanReasonDraft(e.target.value)}
+            style={{marginTop:"0.6rem",width:"100%",maxWidth:"420px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
+          />
+        </div>
+        <button className={`pause-btn ${caribbeanEnabled?"is-open":"is-paused"}`} onClick={handleCaribbeanToggle}>
+          {caribbeanEnabled ? "⏸ Hide Caribbean" : "▶ Show Caribbean"}
         </button>
       </div>
       <div className="stats-grid">
@@ -1161,7 +1259,7 @@ function AdminDashboard({ storePaused, setStorePaused }) {
                 <div style={{textAlign:"right"}}>
                   <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
                   <div><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></div>
-                  <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value)}>
+                  <select className="status-select" value={o.order_status} onChange={e => updateStatus(o.id,e.target.value,o)}>
                     <option value="new">New</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="ready">Ready</option>
@@ -1527,7 +1625,7 @@ function AdminAnalytics() {
 
 function AdminPage() {
   const [tab, setTab] = useState("orders");
-  const { storePaused, setStorePaused } = useContext(MenuStateContext);
+  const { storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason } = useContext(MenuStateContext);
   async function handleLogout() { await supabase.auth.signOut(); window.location.href = window.location.pathname; }
   return (
     <div className="admin-layout">
@@ -1540,7 +1638,7 @@ function AdminPage() {
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":"MENU MANAGER"}</div>
-        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} />}
+        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} />}
         {tab==="customers" && <AdminCustomers />}
         {tab==="analytics" && <AdminAnalytics />}
         {tab==="menu" && <AdminMenu />}
