@@ -139,6 +139,8 @@ function MenuStateProvider({ children }) {
   const [pauseReason, setPauseReasonState] = useState("");
   const [caribbeanEnabled, setCaribbeanEnabledState] = useState(true);
   const [caribbeanReason, setCaribbeanReasonState] = useState("");
+  const [caribbeanCutoff, setCaribbeanCutoffState] = useState("");
+  const [caribbeanOrderInfo, setCaribbeanOrderInfoState] = useState("");
   const [menuLoading, setMenuLoading] = useState(true);
 
   // Load menu from Supabase on mount
@@ -200,6 +202,8 @@ function MenuStateProvider({ children }) {
     setPauseReasonState(map.pause_reason || "");
     setCaribbeanEnabledState(map.caribbean_enabled !== "false");
     setCaribbeanReasonState(map.caribbean_reason || "");
+    setCaribbeanCutoffState(map.caribbean_cutoff || "");
+    setCaribbeanOrderInfoState(map.caribbean_order_info || "");
   }
 
   async function setStorePaused(paused, reason) {
@@ -216,6 +220,18 @@ function MenuStateProvider({ children }) {
     const rows = [{ key: "caribbean_enabled", value: String(enabled), updated_at: new Date().toISOString() }];
     if (reason !== undefined) rows.push({ key: "caribbean_reason", value: reason, updated_at: new Date().toISOString() });
     await supabase.from("store_settings").upsert(rows);
+  }
+
+  async function setCaribbeanCutoff(cutoff) {
+    setCaribbeanCutoffState(cutoff);
+    await supabase.from("store_settings")
+      .upsert({ key: "caribbean_cutoff", value: cutoff, updated_at: new Date().toISOString() });
+  }
+
+  async function setCaribbeanOrderInfo(text) {
+    setCaribbeanOrderInfoState(text);
+    await supabase.from("store_settings")
+      .upsert({ key: "caribbean_order_info", value: text, updated_at: new Date().toISOString() });
   }
 
   async function toggleItem(id) {
@@ -304,6 +320,7 @@ function MenuStateProvider({ children }) {
       menuItems, availableItems, toggleItem, menuLoading,
       storePaused, setStorePaused, pauseReason,
       caribbeanEnabled, setCaribbeanEnabled, caribbeanReason,
+      caribbeanCutoff, setCaribbeanCutoff,
       addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName
     }}>
       {children}
@@ -743,7 +760,7 @@ function CartDrawer({ onClose, onCheckout }) {
 
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
-  const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, menuLoading } = useContext(MenuStateContext);
+  const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, caribbeanCutoff, menuLoading } = useContext(MenuStateContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
@@ -778,7 +795,10 @@ function MenuPage() {
         <div className="hero-sub">Freshly Baked Every Weekend</div>
         <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
         {caribbeanEnabled ? (
-          <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
+          <>
+            <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
+            {caribbeanCutoff && <p style={{color:"rgba(255,255,255,0.7)",fontSize:"0.85rem",marginTop:"-0.4rem"}}>📅 {caribbeanCutoff}</p>}
+          </>
         ) : caribbeanReason ? (
           <p style={{color:"rgba(255,255,255,0.45)",fontSize:"0.85rem"}}>🍛 Caribbean menu paused this week — {caribbeanReason}</p>
         ) : null}
@@ -1104,12 +1124,13 @@ function PaymentConfirmedPage({ order, onBackToMenu }) {
 // ============================================================
 // ADMIN DASHBOARD
 // ============================================================
-function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason }) {
+function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [reasonDraft, setReasonDraft] = useState(pauseReason || "");
   const [caribbeanReasonDraft, setCaribbeanReasonDraft] = useState(caribbeanReason || "");
+  const [cutoffDraft, setCutoffDraft] = useState(caribbeanCutoff || "");
   const [eventReasonDraft, setEventReasonDraft] = useState(pauseReason || caribbeanReason || "");
   const prevCount = React.useRef(0);
 
@@ -1149,6 +1170,10 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
     const reason = !next ? caribbeanReasonDraft : "";
     if (next) setCaribbeanReasonDraft("");
     await setCaribbeanEnabled(next, reason);
+  }
+
+  async function handleCutoffSave() {
+    await setCaribbeanCutoff(cutoffDraft.trim());
   }
 
   const eventModeOn = storePaused;
@@ -1219,6 +1244,19 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
             onChange={e => setCaribbeanReasonDraft(e.target.value)}
             style={{marginTop:"0.6rem",width:"100%",maxWidth:"420px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
           />
+          <div style={{marginTop:"0.7rem",paddingTop:"0.7rem",borderTop:"1px solid rgba(255,255,255,0.1)"}}>
+            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",marginBottom:"0.4rem"}}>Order-by cutoff shown on the site under the Caribbean tagline (leave blank to hide it):</div>
+            <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap"}}>
+              <input
+                type="text"
+                placeholder="e.g. Order before 09.09.26 by 1pm for collection on 12.09.26"
+                value={cutoffDraft}
+                onChange={e => setCutoffDraft(e.target.value)}
+                style={{flex:1,minWidth:"240px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
+              />
+              <button className="pause-btn is-open" onClick={handleCutoffSave}>Save</button>
+            </div>
+          </div>
         </div>
         <button className={`pause-btn ${caribbeanEnabled?"is-open":"is-paused"}`} onClick={handleCaribbeanToggle}>
           {caribbeanEnabled ? "⏸ Hide Caribbean" : "▶ Show Caribbean"}
@@ -1625,7 +1663,7 @@ function AdminAnalytics() {
 
 function AdminPage() {
   const [tab, setTab] = useState("orders");
-  const { storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason } = useContext(MenuStateContext);
+  const { storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff } = useContext(MenuStateContext);
   async function handleLogout() { await supabase.auth.signOut(); window.location.href = window.location.pathname; }
   return (
     <div className="admin-layout">
@@ -1638,7 +1676,7 @@ function AdminPage() {
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":"MENU MANAGER"}</div>
-        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} />}
+        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} caribbeanCutoff={caribbeanCutoff} setCaribbeanCutoff={setCaribbeanCutoff} />}
         {tab==="customers" && <AdminCustomers />}
         {tab==="analytics" && <AdminAnalytics />}
         {tab==="menu" && <AdminMenu />}
