@@ -758,6 +758,60 @@ function CartDrawer({ onClose, onCheckout }) {
   );
 }
 
+function timeAgo(dateStr) {
+  const days = Math.floor((new Date() - new Date(dateStr)) / 86400000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "1 day ago";
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return "1 week ago";
+  if (days < 30) return `${Math.floor(days/7)} weeks ago`;
+  if (days < 60) return "1 month ago";
+  return `${Math.floor(days/30)} months ago`;
+}
+
+function Stars({ rating }) {
+  return (
+    <span style={{color:"#f5c542",letterSpacing:"1px"}}>
+      {"★".repeat(rating)}{"☆".repeat(5-rating)}
+    </span>
+  );
+}
+
+function ReviewsSection() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("reviews").select("*").order("created_at",{ascending:false}).then(({ data, error }) => {
+      if (!error && data) setReviews(data);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading || reviews.length === 0) return null;
+
+  return (
+    <div style={{marginTop:"2.5rem"}}>
+      <div style={{fontFamily:"'Bangers',cursive",fontSize:"1.3rem",color:"var(--yellow)",letterSpacing:"2px",marginBottom:"1rem",textAlign:"center"}}>⭐ WHAT CUSTOMERS SAY</div>
+      <div style={{display:"grid",gap:"0.9rem",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))"}}>
+        {reviews.map(r => (
+          <div key={r.id} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"1rem"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <Stars rating={r.rating} />
+              {r.source && <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)",background:"rgba(255,255,255,0.06)",padding:"0.15rem 0.5rem",borderRadius:"10px"}}>via {r.source}</span>}
+            </div>
+            <div style={{margin:"0.5rem 0",color:"rgba(255,255,255,0.8)",fontSize:"0.9rem",fontStyle:"italic"}}>"{r.review_text}"</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.45)",fontWeight:700}}>— {r.name}</span>
+              <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.3)"}}>{timeAgo(r.created_at)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
   const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, caribbeanCutoff, menuLoading } = useContext(MenuStateContext);
@@ -781,12 +835,12 @@ function MenuPage() {
     <>
       {storePaused && (
         <div className="store-closed-banner">
-          <div className="store-closed-title">🔴 NOT TAKING ORDERS RIGHT NOW</div>
-          <div className="store-closed-sub">{pauseReason || "We'll be back soon — check our socials for updates"}</div>
+          <div className="store-closed-title">🔴 NOT TAKING SAME-DAY ORDERS</div>
+          <div className="store-closed-sub">{pauseReason || "We'll be back soon — check our socials for updates"} — pre-orders for other days are still welcome below.</div>
         </div>
       )}
       <div className={`status-banner ${todayLive && !storePaused ? "open" : "closed"}`}>
-        {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
+        {todayLive && !storePaused ? "🟢 We're OPEN — order for collection or delivery today!" : storePaused ? "📅 Pre-order for another day — see dates at checkout" : "⏰ Pre-orders welcome — we're open Friday, Saturday & Sunday 1pm–11pm"}
       </div>
       <div className="hero">
         <div className="hero-badge">🔥 Collection from Darlaston / Wednesbury</div>
@@ -851,6 +905,7 @@ function MenuPage() {
             ? <div style={{textAlign:"center",padding:"3rem",color:"rgba(255,255,255,0.3)"}}>No items available in this category right now.</div>
             : <div className="menu-grid">{filtered.map(item => <MenuCard key={item.id} item={item} onOpen={setSelectedItem} />)}</div>
         }
+        <ReviewsSection />
       </div>
       {selectedItem && <ProductModal item={selectedItem} onClose={() => setSelectedItem(null)} onAdd={(item,options) => dispatch({type:"ADD",item:{...item,options}})} />}
       {count > 0 && (
@@ -865,7 +920,7 @@ function MenuPage() {
 
 function CheckoutPage({ onBack, onConfirm }) {
   const { cart, total } = useContext(CartContext);
-  const { storePaused } = useContext(MenuStateContext);
+  const { storePaused, pauseReason } = useContext(MenuStateContext);
   const availableDays = useState(() => getLiveDays(12))[0];
   const [type, setType] = useState("collection");
   const visibleDays = availableDays;
@@ -880,7 +935,7 @@ function CheckoutPage({ onBack, onConfirm }) {
   const deliveryFee = type === "delivery" ? 2.50 : 0;
   const orderTotal = total + deliveryFee;
   const showAsap = selDayType === "live" && type === "collection";
-  const canSubmit = form.name && form.email && form.phone && selDateLabel && (asap || selTime) && (type === "collection" || form.address) && !submitting && !storePaused;
+  const canSubmit = form.name && form.email && form.phone && selDateLabel && (asap || selTime) && (type === "collection" || form.address) && !submitting && !(storePaused && selDayType === "live");
 
   function selectDate(day) { setSelDateLabel(day.label); setSelDayType(day.type); setSelTime(null); setAsap(false); }
 
@@ -929,17 +984,6 @@ function CheckoutPage({ onBack, onConfirm }) {
     }
   }
 
-  if (storePaused) {
-    return (
-      <div className="page" style={{textAlign:"center",padding:"4rem 1.5rem"}}>
-        <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🔴</div>
-        <div style={{fontFamily:"'Bangers',cursive",fontSize:"2rem",color:"#e06060",letterSpacing:"2px",marginBottom:"0.5rem"}}>NOT TAKING ORDERS</div>
-        <div style={{color:"rgba(255,255,255,0.4)",marginBottom:"1.5rem"}}>We're not accepting orders right now. Check back soon!</div>
-        <button className="back-nav-btn" onClick={onBack}>← Back to Menu</button>
-      </div>
-    );
-  }
-
   return (
     <div className="page">
       <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.5rem"}}>
@@ -956,17 +1000,23 @@ function CheckoutPage({ onBack, onConfirm }) {
             </div>
             <div className="co-title" style={{fontSize:"0.8rem",marginBottom:"0.6rem"}}>📅 PICK A DATE</div>
             <div className="date-grid">
-              {visibleDays.map(day => (
-                <button key={day.label} className={`date-btn ${day.type==="live"?"live-day":""} ${selDateLabel===day.label?"selected":""}`} onClick={() => selectDate(day)}>
-                  {day.label}<div className="date-btn-sub">{day.type==="live"?"🟢 Open":"📅 Pre-order"}</div>
-                </button>
-              ))}
+              {visibleDays.map(day => {
+                const liveBlocked = storePaused && day.type === "live";
+                return (
+                  <button key={day.label} className={`date-btn ${day.type==="live"?"live-day":""} ${selDateLabel===day.label?"selected":""}`}
+                    disabled={liveBlocked} style={liveBlocked?{opacity:0.4,cursor:"not-allowed"}:undefined}
+                    onClick={() => !liveBlocked && selectDate(day)}>
+                    {day.label}<div className="date-btn-sub">{liveBlocked?"🔴 Closed today":day.type==="live"?"🟢 Open":"📅 Pre-order"}</div>
+                  </button>
+                );
+              })}
             </div>
+            {storePaused && <div className="preorder-notice" style={{marginTop:"0.6rem"}}>⚠️ {pauseReason || "We're not taking same-day orders right now"} — pick a future date to pre-order instead.</div>}
             {selDayType === "preorder" && <div className="preorder-notice">📋 <strong>Pre-order day</strong> — your order will be made fresh and ready for your chosen time. We'll confirm by email.</div>}
             {selDateLabel && (
               <>
                 <div className="co-title" style={{fontSize:"0.8rem",margin:"1rem 0 0.6rem"}}>⏰ PICK A TIME</div>
-                {showAsap && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>⚡ Collection ASAP — I'll be there soon!</button>}
+                {showAsap && !storePaused && <button className={`asap-btn ${asap?"selected":""}`} onClick={() => { setAsap(true); setSelTime(null); }}>⚡ Collection ASAP — I'll be there soon!</button>}
                 <div className="time-grid">
                   {TIME_SLOTS.map(t => <button key={t} className={`time-btn ${selTime===t?"selected":""}`} onClick={() => { setSelTime(t); setAsap(false); }}>{t}</button>)}
                 </div>
@@ -1017,7 +1067,11 @@ function CheckoutPage({ onBack, onConfirm }) {
               </div>
             )}
             <button className="place-btn" onClick={handleSubmit} disabled={!canSubmit}>{submitting?"SAVING ORDER...":"PLACE ORDER →"}</button>
-            {!canSubmit && !submitting && <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>Fill in your details and select a date & time</div>}
+            {!canSubmit && !submitting && (
+              <div style={{textAlign:"center",fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.5rem"}}>
+                {storePaused && selDayType === "live" ? "We're not taking same-day orders right now — pick a future date above" : "Fill in your details and select a date & time"}
+              </div>
+            )}
             {submitError && (
               <div style={{marginTop:"0.9rem",padding:"0.9rem",background:"rgba(255,80,80,0.1)",border:"1px solid rgba(255,80,80,0.4)",borderRadius:"8px",fontSize:"0.82rem",color:"#ffb3b3",textAlign:"center"}}>
                 ⚠️ Something went wrong saving your order. Please tap "Place Order" again — if it keeps failing, message us directly at <strong>teeebaaakes@gmail.com</strong> with your order details so we don't miss it.
@@ -1201,8 +1255,8 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
     <div>
       <div className={`pause-banner ${eventModeOn?"":"open-state"}`} style={{border: eventModeOn ? "2px solid #ffb347" : "2px solid rgba(255,179,71,0.35)"}}>
         <div style={{flex:1}}>
-          <div className="pause-banner-text">{eventModeOn ? "🎪 EVENT MODE — store closed, Caribbean hidden" : "🎪 Going to an event this week?"}</div>
-          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>One tap pauses orders AND hides the Caribbean menu together, with one reason</div>
+          <div className="pause-banner-text">{eventModeOn ? "🎪 EVENT MODE — same-day orders off, Caribbean hidden" : "🎪 Going to an event this week?"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>One tap turns off same-day orders AND hides the Caribbean menu, with one reason — pre-orders for other days stay open</div>
           {!eventModeOn && (
             <input
               type="text"
@@ -1219,7 +1273,7 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
       </div>
       <div className={`pause-banner ${storePaused?"":"open-state"}`} style={{marginTop:"0.8rem"}}>
         <div style={{flex:1}}>
-          <div className="pause-banner-text">{storePaused ? "🔴 Orders are PAUSED — customers cannot order" : "🟢 Store is OPEN — accepting orders"}</div>
+          <div className="pause-banner-text">{storePaused ? "🔴 Same-day orders PAUSED — pre-orders for other days still open" : "🟢 Store is OPEN — accepting orders"}</div>
           <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Saved permanently — survives page refresh</div>
           <input
             type="text"
@@ -1230,7 +1284,7 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
           />
         </div>
         <button className={`pause-btn ${storePaused?"is-paused":"is-open"}`} onClick={handlePauseToggle}>
-          {storePaused ? "▶ Resume Orders" : "⏸ Pause Orders"}
+          {storePaused ? "▶ Resume Same-Day Orders" : "⏸ Pause Same-Day Orders"}
         </button>
       </div>
       <div className={`pause-banner ${caribbeanEnabled?"open-state":""}`} style={{marginTop:"0.8rem"}}>
@@ -1599,6 +1653,84 @@ function AdminCustomers() {
   );
 }
 
+function AdminReviews() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ name:"", rating:5, review_text:"", source:"Facebook", date:"" });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { loadReviews(); }, []);
+
+  function loadReviews() {
+    setLoading(true);
+    supabase.from("reviews").select("*").order("created_at",{ascending:false}).then(({ data, error }) => {
+      if (!error && data) setReviews(data);
+      setLoading(false);
+    });
+  }
+
+  async function handleAdd() {
+    if (!form.name.trim() || !form.review_text.trim()) return;
+    setSaving(true);
+    const payload = {
+      name: form.name.trim(), rating: Number(form.rating), review_text: form.review_text.trim(), source: form.source,
+    };
+    if (form.date) payload.created_at = new Date(form.date).toISOString();
+    const { error } = await supabase.from("reviews").insert(payload);
+    setSaving(false);
+    if (error) { console.error("Review insert failed:", error); alert("Couldn't save that review — check the console for details."); return; }
+    setForm({ name:"", rating:5, review_text:"", source:"Facebook", date:"" });
+    loadReviews();
+  }
+
+  async function handleDelete(id) {
+    await supabase.from("reviews").delete().eq("id", id);
+    setReviews(rs => rs.filter(r => r.id !== id));
+  }
+
+  return (
+    <div>
+      <div className="order-card" style={{marginBottom:"1.2rem"}}>
+        <div style={{fontWeight:700,marginBottom:"0.6rem"}}>Add a review</div>
+        <input type="text" placeholder="Customer name" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))}
+          style={{width:"100%",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem",marginBottom:"0.5rem"}} />
+        <select value={form.rating} onChange={e=>setForm(p=>({...p,rating:e.target.value}))}
+          style={{width:"100%",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem",marginBottom:"0.5rem"}}>
+          {[5,4,3,2,1].map(n => <option key={n} value={n}>{"★".repeat(n)}{"☆".repeat(5-n)} ({n})</option>)}
+        </select>
+        <select value={form.source} onChange={e=>setForm(p=>({...p,source:e.target.value}))}
+          style={{width:"100%",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem",marginBottom:"0.5rem"}}>
+          {["Facebook","Google","WhatsApp","Instagram","In Person","Other"].map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <textarea placeholder="What did they say?" value={form.review_text} onChange={e=>setForm(p=>({...p,review_text:e.target.value}))} rows={3}
+          style={{width:"100%",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem",marginBottom:"0.5rem",resize:"vertical"}} />
+        <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",marginBottom:"0.3rem"}}>When did they actually post it? (optional — leave blank to use today)</div>
+        <input type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))}
+          style={{width:"100%",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem",marginBottom:"0.6rem"}} />
+        <button className="pause-btn is-open" onClick={handleAdd} disabled={saving}>{saving?"Saving...":"+ Add Review"}</button>
+      </div>
+      {loading
+        ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>Loading reviews...</div>
+        : reviews.length === 0
+          ? <div style={{color:"rgba(255,255,255,0.4)",padding:"2rem",textAlign:"center"}}>No reviews added yet.</div>
+          : <div className="orders-list">{reviews.map(r => (
+              <div key={r.id} className="order-card">
+                <div>
+                  <div style={{display:"flex",gap:"0.5rem",alignItems:"center"}}>
+                    <Stars rating={r.rating} />
+                    {r.source && <span style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>via {r.source}</span>}
+                  </div>
+                  <div className="order-detail" style={{fontStyle:"italic",margin:"0.3rem 0"}}>"{r.review_text}"</div>
+                  <div className="order-detail" style={{fontWeight:700}}>— {r.name} · {timeAgo(r.created_at)}</div>
+                </div>
+                <button className="wa-btn" style={{background:"rgba(255,80,80,0.15)",borderColor:"rgba(255,80,80,0.4)",color:"#ffb3b3"}} onClick={() => handleDelete(r.id)}>🗑 Delete</button>
+              </div>
+            ))}</div>
+      }
+    </div>
+  );
+}
+
 function AdminAnalytics() {
   const [views, setViews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1669,17 +1801,18 @@ function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-sidebar-label">Admin Panel</div>
-        {[{id:"orders",label:"📋 Orders"},{id:"customers",label:"👥 Customers"},{id:"analytics",label:"📊 Analytics"},{id:"menu",label:"🍩 Menu"}].map(t =>
+        {[{id:"orders",label:"📋 Orders"},{id:"customers",label:"👥 Customers"},{id:"analytics",label:"📊 Analytics"},{id:"menu",label:"🍩 Menu"},{id:"reviews",label:"⭐ Reviews"}].map(t =>
           <button key={t.id} className={`admin-nav-btn ${tab===t.id?"active":""}`} onClick={() => setTab(t.id)}>{t.label}</button>
         )}
         <button className="admin-nav-btn" style={{marginTop:"1rem",opacity:0.7}} onClick={handleLogout}>🚪 Log Out</button>
       </div>
       <div className="admin-main">
-        <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":"MENU MANAGER"}</div>
+        <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":tab==="reviews"?"REVIEWS":"MENU MANAGER"}</div>
         {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} caribbeanCutoff={caribbeanCutoff} setCaribbeanCutoff={setCaribbeanCutoff} />}
         {tab==="customers" && <AdminCustomers />}
         {tab==="analytics" && <AdminAnalytics />}
         {tab==="menu" && <AdminMenu />}
+        {tab==="reviews" && <AdminReviews />}
       </div>
     </div>
   );
