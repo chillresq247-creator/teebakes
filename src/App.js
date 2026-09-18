@@ -820,13 +820,33 @@ function MenuPage() {
   const todayLive = isTodayLive();
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
-    { id:"Cookie Cup", label:"🍪 Cookie Cups" },
-    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
     { id:"Donut", label:"🍩 Donuts" },
+    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
+    { id:"Cookie Cup", label:"🍪 Cookie Cups" },
     ...(caribbeanEnabled ? [{ id:"Caribbean", label:"🍛 Caribbean" }] : []),
     { id:"Extra", label:"✨ Extras" },
   ];
-  const filtered = activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab);
+  // Display order for menu items — categories always group together this way,
+  // regardless of when an item was added. Add new category ids here if you
+  // ever add another category tab.
+  const CATEGORY_ORDER = ["Donut", "Cookie Pie", "Cookie Cup", "Caribbean", "Extra"];
+  function sortForDisplay(items) {
+    return [...items].sort((a, b) => {
+      const catA = CATEGORY_ORDER.indexOf(a.category);
+      const catB = CATEGORY_ORDER.indexOf(b.category);
+      const rankA = catA === -1 ? 999 : catA;
+      const rankB = catB === -1 ? 999 : catB;
+      if (rankA !== rankB) return rankA - rankB;
+      // Within Cookie Pies, the Whole Cookie Pie always goes last
+      if (a.category === "Cookie Pie") {
+        const wholeA = /whole/i.test(a.name) ? 1 : 0;
+        const wholeB = /whole/i.test(b.name) ? 1 : 0;
+        if (wholeA !== wholeB) return wholeA - wholeB;
+      }
+      return a.id - b.id;
+    });
+  }
+  const filtered = sortForDisplay(activeTab === "all" ? availableItems : availableItems.filter(i => i.category === activeTab));
   // Edit this list of item ids to change what shows in "Popular This Weekend", in order (1st = 🥇)
   const popularIds = ["cc-main", "cp-lotus-pie", "d-loaded"];
   const popularItems = popularIds.map(id => availableItems.find(i => i.id === id)).filter(Boolean);
