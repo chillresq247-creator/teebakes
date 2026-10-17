@@ -670,14 +670,39 @@ function MenuCard({ item, onOpen }) {
 }
 
 function ProductModal({ item, onClose, onAdd }) {
+  const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
+  const isBox = !!opts.__box__;
+  const boxConfig = isBox ? opts.__box__ : null;
+
   const [options, setOptions] = useState(() => {
     const d = {};
-    const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
-    Object.keys(opts).forEach(k => d[k] = opts[k][0]);
+    if (!isBox) Object.keys(opts).forEach(k => d[k] = opts[k][0]);
     return d;
   });
-  const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
-  const price = (options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price);
+  const [picks, setPicks] = useState({});
+
+  const totalPicked = isBox ? Object.values(picks).reduce((a,b) => a+b, 0) : 0;
+  const extraCount = isBox ? Math.max(0, totalPicked - boxConfig.size) : 0;
+  const price = isBox
+    ? parseFloat(item.price) + extraCount * boxConfig.extraPrice
+    : (options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price);
+  const canAdd = !isBox || totalPicked >= boxConfig.size;
+
+  function adjustPick(flavour, delta) {
+    setPicks(p => ({ ...p, [flavour]: Math.max(0, (p[flavour]||0) + delta) }));
+  }
+
+  function handleAdd() {
+    if (!canAdd) return;
+    if (isBox) {
+      const summary = Object.entries(picks).filter(([,c]) => c>0).map(([f,c]) => `${c}x ${f}`).join(", ");
+      onAdd({...item, price}, { "Your Box": summary });
+    } else {
+      onAdd({...item, price}, options);
+    }
+    onClose();
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -694,17 +719,40 @@ function ProductModal({ item, onClose, onAdd }) {
           {item.notice && <div className="notice-banner">{item.notice}</div>}
           <div className="modal-desc">{item.description}</div>
           <div style={{ marginBottom:"0.5rem" }}>
-            {(Array.isArray(item.allergens) ? item.allergens : (item.allergens||"").split(",")).map(a => <span key={a} className="allergen-tag">{a.trim()}</span>)}
+            {(Array.isArray(item.allergens) ? item.allergens : (item.allergens||"").split(",")).map(a => a.trim() && <span key={a} className="allergen-tag">{a.trim()}</span>)}
           </div>
-          {opts && Object.entries(opts).map(([key,vals]) => (
-            <div key={key} className="option-group">
-              <div className="option-label">{key}</div>
-              <div className="option-pills">
-                {vals.map(v => <button key={v} className={`option-pill ${options[key]===v?"selected":""}`} onClick={() => setOptions(o => ({...o,[key]:v}))}>{v}</button>)}
+
+          {isBox ? (
+            <div className="option-group">
+              <div className="option-label">
+                Pick {boxConfig.size} — {totalPicked}/{boxConfig.size} chosen
+                {extraCount > 0 && ` (+${extraCount} extra, +£${(extraCount*boxConfig.extraPrice).toFixed(2)})`}
               </div>
+              {boxConfig.choices.map(flavour => (
+                <div key={flavour} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0.5rem 0",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+                  <span style={{fontSize:"0.9rem"}}>{flavour}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
+                    <button className="qty-btn" onClick={() => adjustPick(flavour,-1)}>−</button>
+                    <span className="qty-num">{picks[flavour]||0}</span>
+                    <button className="qty-btn" onClick={() => adjustPick(flavour,1)}>+</button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-          <button className="modal-add-btn" onClick={() => { onAdd({...item, price}, options); onClose(); }}>ADD TO ORDER — £{price.toFixed(2)}</button>
+          ) : (
+            opts && Object.entries(opts).map(([key,vals]) => (
+              <div key={key} className="option-group">
+                <div className="option-label">{key}</div>
+                <div className="option-pills">
+                  {vals.map(v => <button key={v} className={`option-pill ${options[key]===v?"selected":""}`} onClick={() => setOptions(o => ({...o,[key]:v}))}>{v}</button>)}
+                </div>
+              </div>
+            ))
+          )}
+
+          <button className="modal-add-btn" onClick={handleAdd} disabled={!canAdd}>
+            {isBox && !canAdd ? `PICK ${boxConfig.size - totalPicked} MORE` : `ADD TO ORDER — £${price.toFixed(2)}`}
+          </button>
         </div>
       </div>
     </div>
@@ -821,15 +869,17 @@ function MenuPage() {
   const tabs = [
     { id:"all", label:"🍽️ Everything" },
     { id:"Donut", label:"🍩 Donuts" },
-    { id:"Cookie Pie", label:"🥧 Cookie Pies" },
-    { id:"Cookie Cup", label:"🍪 Cookie Cups" },
+    { id:"Whole Pie", label:"🥧 Whole Cookie Pie" },
+    { id:"Cake", label:"🎂 Whole Cakes" },
+    { id:"Brownie", label:"🍫 Brownie & Blondie" },
+    { id:"Box", label:"📦 Boxes & Deals" },
     ...(caribbeanEnabled ? [{ id:"Caribbean", label:"🍛 Caribbean" }] : []),
     { id:"Extra", label:"✨ Extras" },
   ];
   // Display order for menu items — categories always group together this way,
   // regardless of when an item was added. Add new category ids here if you
   // ever add another category tab.
-  const CATEGORY_ORDER = ["Donut", "Cookie Pie", "Cookie Cup", "Caribbean", "Extra"];
+  const CATEGORY_ORDER = ["Donut", "Whole Pie", "Cake", "Brownie", "Box", "Caribbean", "Extra"];
   function sortForDisplay(items) {
     return [...items].sort((a, b) => {
       const catA = CATEGORY_ORDER.indexOf(a.category);
@@ -1472,7 +1522,17 @@ function AdminMenu() {
     else showToast("❌ Enter a valid name", "error");
   }
 
-  const cats = [{id:"Donut",label:"🍩 Donuts"},{id:"Cookie Pie",label:"🥧 Cookie Pies"},{id:"Cookie Cup",label:"🍪 Cookie Cups"},{id:"Caribbean",label:"🍛 Caribbean"},{id:"Extra",label:"✨ Extras"}];
+  const cats = [
+    {id:"Donut",label:"🍩 Donuts"},
+    {id:"Whole Pie",label:"🥧 Whole Cookie Pie"},
+    {id:"Cake",label:"🎂 Whole Cakes"},
+    {id:"Brownie",label:"🍫 Brownie & Blondie"},
+    {id:"Box",label:"📦 Boxes & Deals"},
+    {id:"Caribbean",label:"🍛 Caribbean"},
+    {id:"Extra",label:"✨ Extras"},
+    {id:"Cookie Pie",label:"🥧 Cookie Pie slices (old, hidden)"},
+    {id:"Cookie Cup",label:"🍪 Cookie Cups (old, hidden)"},
+  ];
 
   return (
     <div>
@@ -1494,10 +1554,14 @@ function AdminMenu() {
             <label className="form-label">Category</label>
             <select className="form-select" value={newItem.category} onChange={e => setNewItem(p=>({...p,category:e.target.value}))}>
               <option value="Donut">🍩 Donut</option>
-              <option value="Cookie Pie">🥧 Cookie Pie</option>
-              <option value="Cookie Cup">🍪 Cookie Cup</option>
+              <option value="Whole Pie">🥧 Whole Cookie Pie</option>
+              <option value="Cake">🎂 Whole Cake</option>
+              <option value="Brownie">🍫 Brownie & Blondie</option>
+              <option value="Box">📦 Box / Deal</option>
               <option value="Caribbean">🍛 Caribbean</option>
               <option value="Extra">✨ Extra</option>
+              <option value="Cookie Pie">🥧 Cookie Pie (old, hidden from site)</option>
+              <option value="Cookie Cup">🍪 Cookie Cup (old, hidden from site)</option>
             </select>
           </div>
           <div className="form-group">
