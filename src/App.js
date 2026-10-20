@@ -694,7 +694,18 @@ function toppingExtraPrice(name, cfg) {
 }
 function toppingsTotal(order, cfg, basePrice) {
   const included = cfg.included === undefined ? 1 : cfg.included;
-  return order.slice(included).reduce((sum, name) => sum + toppingExtraPrice(name, cfg), basePrice);
+  const incSurcharge = cfg.includedSurcharges || {};
+  let total = basePrice;
+  order.forEach((name, i) => {
+    total += i < included ? Number(incSurcharge[name] || 0) : toppingExtraPrice(name, cfg);
+  });
+  return total;
+}
+
+// Turns a chosen-options object into readable text, e.g. "Pick Your Rice: Rice & Peas · Steamed Veg: Yes please"
+function formatOptions(options) {
+  if (!options || typeof options !== "object") return "";
+  return Object.entries(options).map(([k, v]) => `${String(k).replace(/\?$/, "")}: ${v}`).join(" · ");
 }
 
 function ProductModal({ item, onClose, onAdd }) {
@@ -745,7 +756,7 @@ function ProductModal({ item, onClose, onAdd }) {
       const summary = toppingOrder.length === 0
         ? "No topping (butter, salt & pepper only)"
         : toppingOrder.map((t, i) => i < toppingsIncluded ? t : `${t} (extra)`).join(", ");
-      onAdd({...item, price}, { "Toppings": summary });
+      onAdd({...item, price}, { ...options, "Toppings": summary });
     } else if (isBox) {
       const summary = Object.entries(picks).filter(([,c]) => c>0).map(([f,c]) => `${c}x ${f}`).join(", ");
       onAdd({...item, price}, { "Your Box": summary });
@@ -754,6 +765,15 @@ function ProductModal({ item, onClose, onAdd }) {
     }
     onClose();
   }
+
+  const renderOptionGroups = () => Object.entries(opts).filter(([key]) => !key.startsWith("__")).map(([key,vals]) => (
+    <div key={key} className="option-group">
+      <div className="option-label">{key}</div>
+      <div className="option-pills">
+        {vals.map(v => <button key={v} className={`option-pill ${options[key]===v?"selected":""}`} onClick={() => setOptions(o => ({...o,[key]:v}))}>{v}</button>)}
+      </div>
+    </div>
+  ));
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -792,23 +812,28 @@ function ProductModal({ item, onClose, onAdd }) {
               ))}
             </div>
           ) : isToppings ? (
+            <>
+            {renderOptionGroups()}
             <div className="option-group">
               <div className="option-label">Pick your toppings</div>
               <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>
-                Butter, salt &amp; pepper are free. Your first topping is included — any more are extra.
+                Your first topping is included — any more are extra.
               </div>
               <div style={{fontSize:"0.82rem",color:"var(--yellow)",fontWeight:700,marginBottom:"0.3rem"}}>
                 {toppingOrder.length < toppingsIncluded
                   ? "Pick your included topping"
                   : price - parseFloat(item.price) > 0
-                    ? `Extra toppings: +£${(price - parseFloat(item.price)).toFixed(2)}`
+                    ? `Toppings add: +£${(price - parseFloat(item.price)).toFixed(2)}`
                     : "Included topping chosen — add more for extra"}
               </div>
               {toppingsConfig.choices.map(name => (
                 <div key={name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0.5rem 0",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
                   <span style={{fontSize:"0.9rem",paddingRight:"0.6rem"}}>
                     {name}
-                    <span style={{display:"block",fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>extra £{toppingExtraPrice(name, toppingsConfig).toFixed(2)}</span>
+                    <span style={{display:"block",fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>
+                      extra £{toppingExtraPrice(name, toppingsConfig).toFixed(2)}
+                      {toppingsConfig.includedSurcharges && toppingsConfig.includedSurcharges[name] ? ` · or +£${Number(toppingsConfig.includedSurcharges[name]).toFixed(2)} if it's your included one` : ""}
+                    </span>
                   </span>
                   <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
                     <button className="qty-btn" onClick={() => adjustTopping(name,-1)}>−</button>
@@ -818,15 +843,9 @@ function ProductModal({ item, onClose, onAdd }) {
                 </div>
               ))}
             </div>
+            </>
           ) : (
-            opts && Object.entries(opts).filter(([key]) => !key.startsWith("__")).map(([key,vals]) => (
-              <div key={key} className="option-group">
-                <div className="option-label">{key}</div>
-                <div className="option-pills">
-                  {vals.map(v => <button key={v} className={`option-pill ${options[key]===v?"selected":""}`} onClick={() => setOptions(o => ({...o,[key]:v}))}>{v}</button>)}
-                </div>
-              </div>
-            ))
+            renderOptionGroups()
           )}
 
           <button className="modal-add-btn" onClick={handleAdd} disabled={!canAdd}>
@@ -854,7 +873,7 @@ function CartDrawer({ onClose, onCheckout }) {
             <div className="cart-item-emoji">{item.emoji}</div>
             <div className="cart-item-info">
               <div className="cart-item-name">{item.name}</div>
-              {item.options && <div className="cart-item-opts">{Object.values(item.options).join(" · ")}</div>}
+              {formatOptions(item.options) && <div className="cart-item-opts">{formatOptions(item.options)}</div>}
               <div className="cart-item-price">£{(item.price * item.qty).toFixed(2)}</div>
               <div className="qty-controls">
                 <button className="qty-btn" onClick={() => dispatch({type:"UPDATE_QTY",idx,qty:item.qty-1})}>−</button>
@@ -870,7 +889,6 @@ function CartDrawer({ onClose, onCheckout }) {
           <div className="addon-title">Add to your order</div>
           <div className="addon-row">
             <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-nutella",name:"Extra Nutella",price:0.75,emoji:"🍫"}})}>🍫 Extra Nutella +£0.75</button>
-            <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-cookiecup",name:"Add a Cookie Cup",price:2.50,emoji:"🍪"}})}>🍪 Cookie Cup +£2.50</button>
             <button className="addon-btn" onClick={() => dispatch({type:"ADD",item:{id:"addon-drink",name:"Add a Drink",price:1.00,emoji:"🥤"}})}>🥤 Drink +£1.00</button>
           </div>
         </div>
@@ -1123,7 +1141,7 @@ function CheckoutPage({ onBack, onConfirm }) {
           access_key: "77ce4f8c-6a71-484d-908c-0ae1e5318610",
           subject: saved ? `📦 New TeeBakes Order — ${orderId}` : `⚠️ ORDER FAILED TO SAVE — ${orderId} (add manually)`,
           name: form.name, email: form.email,
-          message: `${saved ? "New order!" : `⚠️ This order did NOT save to the admin panel (database error: ${lastError?.message || "unknown"}). Please add it manually and follow up with the customer.\n`}\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems: ${cart.map(i=>`${i.qty}x ${i.name}`).join(", ")}\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
+          message: `${saved ? "New order!" : `⚠️ This order did NOT save to the admin panel (database error: ${lastError?.message || "unknown"}). Please add it manually and follow up with the customer.\n`}\n\nID: ${orderId}\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nType: ${type}\n${type==="delivery"?`Address: ${form.address}\n`:""}\nDate: ${selDateLabel}\nTime: ${timeLabel}\nItems:\n${cart.map(i=>`${i.qty}x ${i.name}${formatOptions(i.options) ? ` (${formatOptions(i.options)})` : ""}`).join("\n")}\n\nNotes: ${form.notes||"None"}\nTotal: £${orderTotal.toFixed(2)}`
         })
       });
     } catch(e) { console.error("Email error:", e); }
@@ -1525,7 +1543,12 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
                   <div className="order-detail">{o.type==="collection"?"🏪 Collection":"🚗 Delivery"} · {o.date} at {o.time}</div>
                   {o.delivery_address && <div className="order-detail">📍 {o.delivery_address}</div>}
                   {o.notes && <div className="order-detail">📝 {o.notes}</div>}
-                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => <span key={i} className="order-item-chip">{item.qty}× {item.name}</span>)}</div>
+                  <div style={{marginTop:"0.4rem"}}>{o.items&&o.items.map((item,i) => (
+                    <div key={i} style={{marginBottom:"0.35rem"}}>
+                      <span className="order-item-chip">{item.qty}× {item.name}</span>
+                      {formatOptions(item.options) && <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.6)",marginTop:"0.15rem"}}>{formatOptions(item.options)}</div>}
+                    </div>
+                  ))}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
                   <div className="order-total-badge">£{(o.total||0).toFixed(2)}</div>
