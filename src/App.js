@@ -686,17 +686,32 @@ function MenuCard({ item, onOpen }) {
   );
 }
 
+// Jacket-style toppings: the first N toppings picked are included in the price,
+// every one after that is charged (some toppings can have their own extra price).
+function toppingExtraPrice(name, cfg) {
+  const special = cfg.extraPrices && cfg.extraPrices[name];
+  return special !== undefined ? Number(special) : Number(cfg.extraPrice || 0);
+}
+function toppingsTotal(order, cfg, basePrice) {
+  const included = cfg.included === undefined ? 1 : cfg.included;
+  return order.slice(included).reduce((sum, name) => sum + toppingExtraPrice(name, cfg), basePrice);
+}
+
 function ProductModal({ item, onClose, onAdd }) {
   const opts = typeof item.options === "string" ? JSON.parse(item.options || "{}") : (item.options || {});
   const isBox = !!opts.__box__;
   const boxConfig = isBox ? opts.__box__ : null;
+  const toppingsConfig = opts.__toppings__ || null;
+  const isToppings = !!toppingsConfig;
+  const toppingsIncluded = isToppings && toppingsConfig.included !== undefined ? toppingsConfig.included : 1;
 
   const [options, setOptions] = useState(() => {
     const d = {};
-    if (!isBox) Object.keys(opts).forEach(k => d[k] = opts[k][0]);
+    if (!isBox) Object.keys(opts).filter(k => !k.startsWith("__")).forEach(k => d[k] = opts[k][0]);
     return d;
   });
   const [picks, setPicks] = useState({});
+  const [toppingOrder, setToppingOrder] = useState([]);
 
   const totalPicked = isBox ? Object.values(picks).reduce((a,b) => a+b, 0) : 0;
   const extraCount = isBox ? Math.max(0, totalPicked - boxConfig.size) : 0;
@@ -707,16 +722,31 @@ function ProductModal({ item, onClose, onAdd }) {
   }, 0);
   const price = isBox
     ? parseFloat(item.price) + extraCount * boxConfig.extraPrice
-    : ((options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price)) + optionExtras;
+    : isToppings
+      ? toppingsTotal(toppingOrder, toppingsConfig, parseFloat(item.price))
+      : ((options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price)) + optionExtras;
   const canAdd = !isBox || totalPicked >= boxConfig.size;
 
   function adjustPick(flavour, delta) {
     setPicks(p => ({ ...p, [flavour]: Math.max(0, (p[flavour]||0) + delta) }));
   }
 
+  function adjustTopping(name, delta) {
+    setToppingOrder(o => {
+      if (delta > 0) return [...o, name];
+      const i = o.lastIndexOf(name);
+      return i === -1 ? o : [...o.slice(0, i), ...o.slice(i + 1)];
+    });
+  }
+
   function handleAdd() {
     if (!canAdd) return;
-    if (isBox) {
+    if (isToppings) {
+      const summary = toppingOrder.length === 0
+        ? "No topping (butter, salt & pepper only)"
+        : toppingOrder.map((t, i) => i < toppingsIncluded ? t : `${t} (extra)`).join(", ");
+      onAdd({...item, price}, { "Toppings": summary });
+    } else if (isBox) {
       const summary = Object.entries(picks).filter(([,c]) => c>0).map(([f,c]) => `${c}x ${f}`).join(", ");
       onAdd({...item, price}, { "Your Box": summary });
     } else {
@@ -761,8 +791,35 @@ function ProductModal({ item, onClose, onAdd }) {
                 </div>
               ))}
             </div>
+          ) : isToppings ? (
+            <div className="option-group">
+              <div className="option-label">Pick your toppings</div>
+              <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>
+                Butter, salt &amp; pepper are free. Your first topping is included — any more are extra.
+              </div>
+              <div style={{fontSize:"0.82rem",color:"var(--yellow)",fontWeight:700,marginBottom:"0.3rem"}}>
+                {toppingOrder.length < toppingsIncluded
+                  ? "Pick your included topping"
+                  : price - parseFloat(item.price) > 0
+                    ? `Extra toppings: +£${(price - parseFloat(item.price)).toFixed(2)}`
+                    : "Included topping chosen — add more for extra"}
+              </div>
+              {toppingsConfig.choices.map(name => (
+                <div key={name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0.5rem 0",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+                  <span style={{fontSize:"0.9rem",paddingRight:"0.6rem"}}>
+                    {name}
+                    <span style={{display:"block",fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>extra £{toppingExtraPrice(name, toppingsConfig).toFixed(2)}</span>
+                  </span>
+                  <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
+                    <button className="qty-btn" onClick={() => adjustTopping(name,-1)}>−</button>
+                    <span className="qty-num">{toppingOrder.filter(t => t === name).length}</span>
+                    <button className="qty-btn" onClick={() => adjustTopping(name,1)}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            opts && Object.entries(opts).map(([key,vals]) => (
+            opts && Object.entries(opts).filter(([key]) => !key.startsWith("__")).map(([key,vals]) => (
               <div key={key} className="option-group">
                 <div className="option-label">{key}</div>
                 <div className="option-pills">
