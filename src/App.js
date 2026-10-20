@@ -140,6 +140,8 @@ function MenuStateProvider({ children }) {
   const [caribbeanEnabled, setCaribbeanEnabledState] = useState(true);
   const [caribbeanReason, setCaribbeanReasonState] = useState("");
   const [caribbeanCutoff, setCaribbeanCutoffState] = useState("");
+  const [jacketsEnabled, setJacketsEnabledState] = useState(false);
+  const [jacketsInfo, setJacketsInfoState] = useState("");
   const [caribbeanOrderInfo, setCaribbeanOrderInfoState] = useState("");
   const [menuLoading, setMenuLoading] = useState(true);
 
@@ -203,6 +205,8 @@ function MenuStateProvider({ children }) {
     setCaribbeanEnabledState(map.caribbean_enabled !== "false");
     setCaribbeanReasonState(map.caribbean_reason || "");
     setCaribbeanCutoffState(map.caribbean_cutoff || "");
+    setJacketsEnabledState(map.jackets_enabled === "true");
+    setJacketsInfoState(map.jackets_info || "");
     setCaribbeanOrderInfoState(map.caribbean_order_info || "");
   }
 
@@ -220,6 +224,18 @@ function MenuStateProvider({ children }) {
     const rows = [{ key: "caribbean_enabled", value: String(enabled), updated_at: new Date().toISOString() }];
     if (reason !== undefined) rows.push({ key: "caribbean_reason", value: reason, updated_at: new Date().toISOString() });
     await supabase.from("store_settings").upsert(rows);
+  }
+
+  async function setJacketsEnabled(enabled) {
+    setJacketsEnabledState(enabled);
+    await supabase.from("store_settings")
+      .upsert({ key: "jackets_enabled", value: String(enabled), updated_at: new Date().toISOString() });
+  }
+
+  async function setJacketsInfo(text) {
+    setJacketsInfoState(text);
+    await supabase.from("store_settings")
+      .upsert({ key: "jackets_info", value: text, updated_at: new Date().toISOString() });
   }
 
   async function setCaribbeanCutoff(cutoff) {
@@ -313,7 +329,7 @@ function MenuStateProvider({ children }) {
     return true;
   }
 
-  const availableItems = menuItems.filter(i => i.available && (caribbeanEnabled || i.category !== "Caribbean"));
+  const availableItems = menuItems.filter(i => i.available && (caribbeanEnabled || i.category !== "Caribbean") && (jacketsEnabled || i.category !== "Jacket"));
 
   return (
     <MenuStateContext.Provider value={{
@@ -321,6 +337,7 @@ function MenuStateProvider({ children }) {
       storePaused, setStorePaused, pauseReason,
       caribbeanEnabled, setCaribbeanEnabled, caribbeanReason,
       caribbeanCutoff, setCaribbeanCutoff,
+      jacketsEnabled, setJacketsEnabled, jacketsInfo, setJacketsInfo,
       addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName
     }}>
       {children}
@@ -683,9 +700,14 @@ function ProductModal({ item, onClose, onAdd }) {
 
   const totalPicked = isBox ? Object.values(picks).reduce((a,b) => a+b, 0) : 0;
   const extraCount = isBox ? Math.max(0, totalPicked - boxConfig.size) : 0;
+  // Any chosen option written like "Yes please (+£1.50)" adds that amount to the price
+  const optionExtras = isBox ? 0 : Object.values(options).reduce((sum, v) => {
+    const m = String(v).match(/\+£(\d+(?:\.\d{1,2})?)/);
+    return sum + (m ? parseFloat(m[1]) : 0);
+  }, 0);
   const price = isBox
     ? parseFloat(item.price) + extraCount * boxConfig.extraPrice
-    : (options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price);
+    : ((options["How would you like it?"] || "").includes("£3.50") ? 3.50 : parseFloat(item.price)) + optionExtras;
   const canAdd = !isBox || totalPicked >= boxConfig.size;
 
   function adjustPick(flavour, delta) {
@@ -862,7 +884,7 @@ function ReviewsSection() {
 
 function MenuPage() {
   const { dispatch, count, total } = useContext(CartContext);
-  const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, caribbeanCutoff, menuLoading } = useContext(MenuStateContext);
+  const { availableItems, storePaused, pauseReason, caribbeanEnabled, caribbeanReason, caribbeanCutoff, jacketsEnabled, jacketsInfo, menuLoading } = useContext(MenuStateContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const todayLive = isTodayLive();
@@ -874,12 +896,13 @@ function MenuPage() {
     { id:"Brownie", label:"🍫 Brownie & Blondie" },
     { id:"Box", label:"📦 Boxes & Deals" },
     ...(caribbeanEnabled ? [{ id:"Caribbean", label:"🍛 Caribbean" }] : []),
+    ...(jacketsEnabled ? [{ id:"Jacket", label:"🥔 Jacket Potatoes" }] : []),
     { id:"Extra", label:"✨ Extras" },
   ];
   // Display order for menu items — categories always group together this way,
   // regardless of when an item was added. Add new category ids here if you
   // ever add another category tab.
-  const CATEGORY_ORDER = ["Donut", "Whole Pie", "Cake", "Brownie", "Box", "Caribbean", "Extra"];
+  const CATEGORY_ORDER = ["Donut", "Whole Pie", "Cake", "Brownie", "Box", "Caribbean", "Jacket", "Extra"];
   function sortForDisplay(items) {
     return [...items].sort((a, b) => {
       const catA = CATEGORY_ORDER.indexOf(a.category);
@@ -926,6 +949,7 @@ function MenuPage() {
         ) : caribbeanReason ? (
           <p style={{color:"rgba(255,255,255,0.45)",fontSize:"0.85rem"}}>🍛 Caribbean menu paused this week — {caribbeanReason}</p>
         ) : null}
+        {jacketsEnabled && jacketsInfo && <p style={{color:"var(--yellow)",fontWeight:700}}>🥔 {jacketsInfo}</p>}
         <a href="mailto:teeebaaakes@gmail.com?subject=Mobile%20Trailer%20Booking%20Enquiry" className="hero-trailer-link">🚚 Book our mobile trailer for any event</a>
         <button className="hero-cta" onClick={() => document.getElementById("menu")?.scrollIntoView({behavior:"smooth"})}>Order Now</button>
         <div className="hero-contact">✉️ <a href="mailto:teeebaaakes@gmail.com">teeebaaakes@gmail.com</a></div>
@@ -934,6 +958,7 @@ function MenuPage() {
           <span className="hero-pill">🥧 Cookie Pies</span>
           <span className="hero-pill">🍪 Cookie Cups</span>
           {caribbeanEnabled && <span className="hero-pill">🍛 Caribbean</span>}
+          {jacketsEnabled && <span className="hero-pill">🥔 Jacket Potatoes</span>}
           <span className="hero-pill">🚗 Delivery Available</span>
         </div>
         <div className="trust-strip">
@@ -1248,13 +1273,14 @@ function PaymentConfirmedPage({ order, onBackToMenu }) {
 // ============================================================
 // ADMIN DASHBOARD
 // ============================================================
-function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff }) {
+function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff, jacketsEnabled, setJacketsEnabled, jacketsInfo, setJacketsInfo }) {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [reasonDraft, setReasonDraft] = useState(pauseReason || "");
   const [caribbeanReasonDraft, setCaribbeanReasonDraft] = useState(caribbeanReason || "");
   const [cutoffDraft, setCutoffDraft] = useState(caribbeanCutoff || "");
+  const [jacketsInfoDraft, setJacketsInfoDraft] = useState(jacketsInfo || "");
   const [eventReasonDraft, setEventReasonDraft] = useState(pauseReason || caribbeanReason || "");
   const prevCount = React.useRef(0);
 
@@ -1294,6 +1320,10 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
     const reason = !next ? caribbeanReasonDraft : "";
     if (next) setCaribbeanReasonDraft("");
     await setCaribbeanEnabled(next, reason);
+  }
+
+  async function handleJacketsInfoSave() {
+    await setJacketsInfo(jacketsInfoDraft.trim());
   }
 
   async function handleCutoffSave() {
@@ -1384,6 +1414,28 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
         </div>
         <button className={`pause-btn ${caribbeanEnabled?"is-open":"is-paused"}`} onClick={handleCaribbeanToggle}>
           {caribbeanEnabled ? "⏸ Hide Caribbean" : "▶ Show Caribbean"}
+        </button>
+      </div>
+      <div className={`pause-banner ${jacketsEnabled?"open-state":""}`} style={{marginTop:"0.8rem"}}>
+        <div style={{flex:1}}>
+          <div className="pause-banner-text">{jacketsEnabled ? "🟢 Jacket Potatoes tab is LIVE" : "🔴 Jacket Potatoes tab is HIDDEN from customers"}</div>
+          <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.3)",marginTop:"0.3rem"}}>Switch on when you're selling jackets, off when you're not. Doesn't affect anything else.</div>
+          <div style={{marginTop:"0.7rem",paddingTop:"0.7rem",borderTop:"1px solid rgba(255,255,255,0.1)"}}>
+            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)",marginBottom:"0.4rem"}}>Message shown on the homepage while it's live, e.g. where, when and the pre-order deadline (leave blank to hide it):</div>
+            <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap"}}>
+              <input
+                type="text"
+                placeholder="e.g. Jacket potatoes at the Darlaston event Sat 12.09.26 — pre-order by 9pm Thurs"
+                value={jacketsInfoDraft}
+                onChange={e => setJacketsInfoDraft(e.target.value)}
+                style={{flex:1,minWidth:"240px",padding:"0.5rem 0.7rem",borderRadius:"6px",border:"1px solid rgba(255,255,255,0.2)",background:"rgba(0,0,0,0.25)",color:"#fff",fontSize:"0.85rem"}}
+              />
+              <button className="pause-btn is-open" onClick={handleJacketsInfoSave}>Save</button>
+            </div>
+          </div>
+        </div>
+        <button className={`pause-btn ${jacketsEnabled?"is-open":"is-paused"}`} onClick={() => setJacketsEnabled(!jacketsEnabled)}>
+          {jacketsEnabled ? "⏸ Hide Jackets" : "▶ Show Jackets"}
         </button>
       </div>
       <div className="stats-grid">
@@ -1529,6 +1581,7 @@ function AdminMenu() {
     {id:"Brownie",label:"🍫 Brownie & Blondie"},
     {id:"Box",label:"📦 Boxes & Deals"},
     {id:"Caribbean",label:"🍛 Caribbean"},
+    {id:"Jacket",label:"🥔 Jacket Potatoes"},
     {id:"Extra",label:"✨ Extras"},
     {id:"Cookie Pie",label:"🥧 Cookie Pie slices (old, hidden)"},
     {id:"Cookie Cup",label:"🍪 Cookie Cups (old, hidden)"},
@@ -1559,6 +1612,7 @@ function AdminMenu() {
               <option value="Brownie">🍫 Brownie & Blondie</option>
               <option value="Box">📦 Box / Deal</option>
               <option value="Caribbean">🍛 Caribbean</option>
+              <option value="Jacket">🥔 Jacket Potato</option>
               <option value="Extra">✨ Extra</option>
               <option value="Cookie Pie">🥧 Cookie Pie (old, hidden from site)</option>
               <option value="Cookie Cup">🍪 Cookie Cup (old, hidden from site)</option>
@@ -1879,7 +1933,7 @@ function AdminAnalytics() {
 
 function AdminPage() {
   const [tab, setTab] = useState("orders");
-  const { storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff } = useContext(MenuStateContext);
+  const { storePaused, setStorePaused, pauseReason, caribbeanEnabled, setCaribbeanEnabled, caribbeanReason, caribbeanCutoff, setCaribbeanCutoff, jacketsEnabled, setJacketsEnabled, jacketsInfo, setJacketsInfo } = useContext(MenuStateContext);
   async function handleLogout() { await supabase.auth.signOut(); window.location.href = window.location.pathname; }
   return (
     <div className="admin-layout">
@@ -1892,7 +1946,7 @@ function AdminPage() {
       </div>
       <div className="admin-main">
         <div className="admin-page-title">{tab==="orders"?"ORDERS":tab==="customers"?"CUSTOMERS":tab==="analytics"?"ANALYTICS":tab==="reviews"?"REVIEWS":"MENU MANAGER"}</div>
-        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} caribbeanCutoff={caribbeanCutoff} setCaribbeanCutoff={setCaribbeanCutoff} />}
+        {tab==="orders" && <AdminDashboard storePaused={storePaused} setStorePaused={setStorePaused} pauseReason={pauseReason} caribbeanEnabled={caribbeanEnabled} setCaribbeanEnabled={setCaribbeanEnabled} caribbeanReason={caribbeanReason} caribbeanCutoff={caribbeanCutoff} setCaribbeanCutoff={setCaribbeanCutoff} jacketsEnabled={jacketsEnabled} setJacketsEnabled={setJacketsEnabled} jacketsInfo={jacketsInfo} setJacketsInfo={setJacketsInfo} />}
         {tab==="customers" && <AdminCustomers />}
         {tab==="analytics" && <AdminAnalytics />}
         {tab==="menu" && <AdminMenu />}
