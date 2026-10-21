@@ -692,14 +692,18 @@ function toppingExtraPrice(name, cfg) {
   const special = cfg.extraPrices && cfg.extraPrices[name];
   return special !== undefined ? Number(special) : Number(cfg.extraPrice || 0);
 }
-function toppingsTotal(order, cfg, basePrice) {
-  const included = cfg.included === undefined ? 1 : cfg.included;
-  const incSurcharge = cfg.includedSurcharges || {};
-  let total = basePrice;
-  order.forEach((name, i) => {
-    total += i < included ? Number(incSurcharge[name] || 0) : toppingExtraPrice(name, cfg);
+// Works out which picked toppings use the free "included" slot. Toppings listed in
+// cfg.neverIncluded (e.g. jerk chicken, chilli) never use it, so they always cost extra.
+function toppingSlots(order, cfg) {
+  const never = cfg.neverIncluded || [];
+  let freeLeft = cfg.included === undefined ? 1 : cfg.included;
+  return order.map(name => {
+    if (!never.includes(name) && freeLeft > 0) { freeLeft -= 1; return { name, free: true }; }
+    return { name, free: false };
   });
-  return total;
+}
+function toppingsTotal(order, cfg, basePrice) {
+  return toppingSlots(order, cfg).reduce((sum, t) => sum + (t.free ? 0 : toppingExtraPrice(t.name, cfg)), basePrice);
 }
 
 // Turns a chosen-options object into readable text, e.g. "Pick Your Rice: Rice & Peas · Steamed Veg: Yes please"
@@ -755,7 +759,7 @@ function ProductModal({ item, onClose, onAdd }) {
     if (isToppings) {
       const summary = toppingOrder.length === 0
         ? "No topping (butter, salt & pepper only)"
-        : toppingOrder.map((t, i) => i < toppingsIncluded ? t : `${t} (extra)`).join(", ");
+        : toppingSlots(toppingOrder, toppingsConfig).map(t => t.free ? t.name : `${t.name} (extra)`).join(", ");
       onAdd({...item, price}, { ...options, "Toppings": summary });
     } else if (isBox) {
       const summary = Object.entries(picks).filter(([,c]) => c>0).map(([f,c]) => `${c}x ${f}`).join(", ");
@@ -818,21 +822,23 @@ function ProductModal({ item, onClose, onAdd }) {
               <div className="option-label">Pick your toppings</div>
               <div style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.5)",marginBottom:"0.5rem"}}>
                 Your first topping is included — any more are extra.
+                {(toppingsConfig.neverIncluded || []).length > 0 && ` ${toppingsConfig.neverIncluded.join(" and ")} ${toppingsConfig.neverIncluded.length > 1 ? "are" : "is"} always charged extra, even as your first topping.`}
               </div>
               <div style={{fontSize:"0.82rem",color:"var(--yellow)",fontWeight:700,marginBottom:"0.3rem"}}>
-                {toppingOrder.length < toppingsIncluded
-                  ? "Pick your included topping"
-                  : price - parseFloat(item.price) > 0
-                    ? `Toppings add: +£${(price - parseFloat(item.price)).toFixed(2)}`
-                    : "Included topping chosen — add more for extra"}
+                {(() => {
+                  const add = price - parseFloat(item.price);
+                  const needFree = toppingSlots(toppingOrder, toppingsConfig).filter(t => t.free).length < toppingsIncluded;
+                  if (needFree && add === 0) return "Pick your included topping";
+                  if (needFree) return `Toppings add: +£${add.toFixed(2)} · your included topping is still to pick`;
+                  return add > 0 ? `Toppings add: +£${add.toFixed(2)}` : "Included topping chosen — add more for extra";
+                })()}
               </div>
               {toppingsConfig.choices.map(name => (
                 <div key={name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0.5rem 0",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
                   <span style={{fontSize:"0.9rem",paddingRight:"0.6rem"}}>
                     {name}
                     <span style={{display:"block",fontSize:"0.72rem",color:"rgba(255,255,255,0.4)"}}>
-                      extra £{toppingExtraPrice(name, toppingsConfig).toFixed(2)}
-                      {toppingsConfig.includedSurcharges && toppingsConfig.includedSurcharges[name] ? ` · or +£${Number(toppingsConfig.includedSurcharges[name]).toFixed(2)} if it's your included one` : ""}
+                      {(toppingsConfig.neverIncluded || []).includes(name) ? "always" : "extra"} £{toppingExtraPrice(name, toppingsConfig).toFixed(2)}
                     </span>
                   </span>
                   <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
@@ -1015,7 +1021,7 @@ function MenuPage() {
         <div style={{display:"flex",justifyContent:"center",marginBottom:"1rem",position:"relative"}}><TeeBakesLogo size={220} priority className="hero-logo-img" /></div>
         <h1 className="sr-only">TeeBakes</h1>
         <div className="hero-sub">Freshly Baked Every Weekend</div>
-        <p>Thick loaded cookies, gooey cookie pies & indulgent cookies homemade in Wednesbury.</p>
+        <p>Loaded donuts, whole cookie pies, cakes, brownies & blondies — all homemade in Wednesbury.</p>
         {caribbeanEnabled ? (
           <>
             <p style={{color:"var(--yellow)",fontWeight:700}}>🍛 Caribbean food made with love & full of flavour.</p>
@@ -1030,8 +1036,10 @@ function MenuPage() {
         <div className="hero-contact">✉️ <a href="mailto:teeebaaakes@gmail.com">teeebaaakes@gmail.com</a></div>
         <div className="hero-pills">
           <span className="hero-pill">🍩 Loaded Donuts</span>
-          <span className="hero-pill">🥧 Cookie Pies</span>
-          <span className="hero-pill">🍪 Cookie Cups</span>
+          <span className="hero-pill">🥧 Whole Cookie Pies</span>
+          <span className="hero-pill">🎂 Cakes</span>
+          <span className="hero-pill">🍫 Brownies &amp; Blondies</span>
+          <span className="hero-pill">📦 Boxes &amp; Deals</span>
           {caribbeanEnabled && <span className="hero-pill">🍛 Caribbean</span>}
           {jacketsEnabled && <span className="hero-pill">🥔 Jacket Potatoes</span>}
           <span className="hero-pill">🚗 Delivery Available</span>
@@ -2112,7 +2120,7 @@ function AppInner() {
   }, []);
 
   useEffect(() => { const h = () => setCartOpen(true); window.addEventListener("openCart",h); return () => window.removeEventListener("openCart",h); }, []);
-  useEffect(() => { document.title = "TeeBakes — Donuts, Cookie Pies & Caribbean Food | Wednesbury"; }, []);
+  useEffect(() => { document.title = "TeeBakes — Donuts, Cookie Pies, Cakes & Caribbean Food | Wednesbury"; }, []);
   useEffect(() => {
     if (typeof window !== "undefined" && !window.location.search.includes("admin")) {
       supabase.from("page_views").insert({}).then(() => {});
