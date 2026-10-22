@@ -266,6 +266,13 @@ function MenuStateProvider({ children }) {
     return !error;
   }
 
+  async function updateMenuItemBadge(id, newBadge) {
+    const badge = (newBadge || "").trim() || null;
+    setMenuItems(items => items.map(i => i.id === id ? {...i, badge} : i));
+    const { error } = await supabase.from("menu_items").update({ badge }).eq("id", id);
+    return !error;
+  }
+
   async function updateMenuItemName(id, newName) {
     const name = (newName || "").trim();
     if (!name) return false;
@@ -338,7 +345,7 @@ function MenuStateProvider({ children }) {
       caribbeanEnabled, setCaribbeanEnabled, caribbeanReason,
       caribbeanCutoff, setCaribbeanCutoff,
       jacketsEnabled, setJacketsEnabled, jacketsInfo, setJacketsInfo,
-      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName
+      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge
     }}>
       {children}
     </MenuStateContext.Provider>
@@ -1579,7 +1586,7 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
 // ADMIN MENU — with Add Item, Upload Image, Delete
 // ============================================================
 function AdminMenu() {
-  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName } = useContext(MenuStateContext);
+  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge } = useContext(MenuStateContext);
   const [toast, setToast] = useState(null);
   const [adding, setAdding] = useState(false);
   const [imageFile, setImageFile] = useState(null);
@@ -1588,6 +1595,8 @@ function AdminMenu() {
   const [priceDraft, setPriceDraft] = useState("");
   const [editingNameId, setEditingNameId] = useState(null);
   const [nameDraft, setNameDraft] = useState("");
+  const [editingBadgeId, setEditingBadgeId] = useState(null);
+  const [badgeDraft, setBadgeDraft] = useState("");
   const [newItem, setNewItem] = useState({
     name:"", price:"", category:"Donut", description:"",
     allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
@@ -1649,6 +1658,17 @@ function AdminMenu() {
     const ok = await updateMenuItemPrice(id, priceDraft);
     if (ok) { showToast("✅ Price updated!"); setEditingPriceId(null); }
     else showToast("❌ Enter a valid price", "error");
+  }
+
+  function startEditBadge(item) {
+    setEditingBadgeId(item.id);
+    setBadgeDraft(item.badge || "");
+  }
+
+  async function saveEditBadge(id, clear) {
+    const ok = await updateMenuItemBadge(id, clear ? "" : badgeDraft);
+    if (ok) { showToast(clear || !badgeDraft.trim() ? "✅ Tag removed!" : "✅ Tag updated!"); setEditingBadgeId(null); }
+    else showToast("❌ Couldn't save the tag", "error");
   }
 
   function startEditName(item) {
@@ -1792,6 +1812,26 @@ function AdminMenu() {
                   ) : (
                     <div className="admin-card-price" style={{cursor:"pointer"}} onClick={() => startEditPrice(item)} title="Tap to edit price">
                       £{parseFloat(item.price).toFixed(2)} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️ edit</span>
+                    </div>
+                  )}
+                  {editingBadgeId === item.id ? (
+                    <div style={{display:"flex",gap:"0.4rem",alignItems:"center",margin:"0.3rem 0",flexWrap:"wrap"}}>
+                      <input
+                        className="form-input"
+                        autoFocus
+                        placeholder="e.g. New, Hot, 4 for £4"
+                        style={{flex:1,minWidth:"120px",padding:"0.3rem 0.5rem"}}
+                        value={badgeDraft}
+                        onChange={e => setBadgeDraft(e.target.value)}
+                        onKeyDown={e => { if (e.key==="Enter") saveEditBadge(item.id); if (e.key==="Escape") setEditingBadgeId(null); }}
+                      />
+                      <button className="add-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => saveEditBadge(item.id)}>Save</button>
+                      {item.badge && <button className="delete-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => saveEditBadge(item.id, true)}>Remove tag</button>}
+                      <button className="delete-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => setEditingBadgeId(null)}>Cancel</button>
+                    </div>
+                  ) : (
+                    <div style={{cursor:"pointer",fontSize:"0.8rem",margin:"0.2rem 0",color:"rgba(255,255,255,0.6)"}} onClick={() => startEditBadge(item)} title="Tap to edit the yellow tag">
+                      🏷️ {item.badge ? <>Tag: <strong style={{color:"var(--yellow)"}}>{item.badge}</strong></> : "No tag"} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️ {item.badge ? "edit" : "add"}</span>
                     </div>
                   )}
                   <div className="admin-card-actions">
