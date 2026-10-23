@@ -266,6 +266,13 @@ function MenuStateProvider({ children }) {
     return !error;
   }
 
+  async function updateMenuItemOptions(id, newOptions) {
+    setMenuItems(items => items.map(i => i.id === id ? {...i, options:newOptions} : i));
+    const { error } = await supabase.from("menu_items").update({ options: newOptions }).eq("id", id);
+    if (error) console.error("Choices update failed:", error);
+    return !error;
+  }
+
   async function updateMenuItemBadge(id, newBadge) {
     const badge = (newBadge || "").trim() || null;
     setMenuItems(items => items.map(i => i.id === id ? {...i, badge} : i));
@@ -345,7 +352,7 @@ function MenuStateProvider({ children }) {
       caribbeanEnabled, setCaribbeanEnabled, caribbeanReason,
       caribbeanCutoff, setCaribbeanCutoff,
       jacketsEnabled, setJacketsEnabled, jacketsInfo, setJacketsInfo,
-      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge
+      addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge, updateMenuItemOptions
     }}>
       {children}
     </MenuStateContext.Provider>
@@ -691,6 +698,32 @@ function MenuCard({ item, onOpen }) {
       </div>
     </div>
   );
+}
+
+// ---- Choice lists (flavours, toppings, box picks) — used by the admin "edit choices" panel ----
+function parseOptions(o) {
+  if (typeof o === "string") { try { return JSON.parse(o || "{}"); } catch { return {}; } }
+  return o || {};
+}
+function choiceLists(opts) {
+  const lists = [];
+  Object.entries(opts).forEach(([k, v]) => {
+    if (k === "__box__" && v && Array.isArray(v.choices)) lists.push({ key:k, label:"Box picks (customers choose from these)", kind:"box", choices:v.choices });
+    else if (k === "__toppings__" && v && Array.isArray(v.choices)) lists.push({ key:k, label:"Toppings", kind:"toppings", choices:v.choices });
+    else if (Array.isArray(v)) lists.push({ key:k, label:k, kind:"group", choices:v });
+  });
+  return lists;
+}
+function applyChoiceLists(opts, drafts) {
+  const out = JSON.parse(JSON.stringify(opts || {}));
+  drafts.forEach(d => {
+    const choices = d.text.split("\n").map(x => x.trim()).filter(Boolean);
+    if (d.kind === "box") out.__box__ = { ...out.__box__, choices };
+    else if (d.kind === "toppings") out.__toppings__ = { ...out.__toppings__, choices };
+    else if (choices.length) out[d.key] = choices;
+    else delete out[d.key];
+  });
+  return out;
 }
 
 // Jacket-style toppings: the first N toppings picked are included in the price,
@@ -1586,7 +1619,7 @@ function AdminDashboard({ storePaused, setStorePaused, pauseReason, caribbeanEna
 // ADMIN MENU — with Add Item, Upload Image, Delete
 // ============================================================
 function AdminMenu() {
-  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge } = useContext(MenuStateContext);
+  const { menuItems, toggleItem, addMenuItem, deleteMenuItem, updateMenuItemImage, updateMenuItemPrice, updateMenuItemName, updateMenuItemBadge, updateMenuItemOptions } = useContext(MenuStateContext);
   const [toast, setToast] = useState(null);
   const [adding, setAdding] = useState(false);
   const [imageFile, setImageFile] = useState(null);
@@ -1597,6 +1630,8 @@ function AdminMenu() {
   const [nameDraft, setNameDraft] = useState("");
   const [editingBadgeId, setEditingBadgeId] = useState(null);
   const [badgeDraft, setBadgeDraft] = useState("");
+  const [editingChoicesId, setEditingChoicesId] = useState(null);
+  const [choicesDraft, setChoicesDraft] = useState([]);
   const [newItem, setNewItem] = useState({
     name:"", price:"", category:"Donut", description:"",
     allergens:"gluten, eggs, dairy", emoji:"🍩", badge:"", bg:"#2d1b69",
@@ -1658,6 +1693,22 @@ function AdminMenu() {
     const ok = await updateMenuItemPrice(id, priceDraft);
     if (ok) { showToast("✅ Price updated!"); setEditingPriceId(null); }
     else showToast("❌ Enter a valid price", "error");
+  }
+
+  function startEditChoices(item) {
+    let lists = choiceLists(parseOptions(item.options));
+    if (lists.length === 0) lists = [{ key:"Choose Flavour", label:"Choose Flavour", kind:"group", choices:[] }];
+    setChoicesDraft(lists.map(l => ({ ...l, text: l.choices.join("\n") })));
+    setEditingChoicesId(item.id);
+  }
+
+  async function saveChoices(item) {
+    const empty = choicesDraft.find(d => (d.kind === "box" || d.kind === "toppings") && !d.text.split("\n").some(x => x.trim()));
+    if (empty) { showToast("❌ Add at least one choice to " + empty.label, "error"); return; }
+    const newOptions = applyChoiceLists(parseOptions(item.options), choicesDraft);
+    const ok = await updateMenuItemOptions(item.id, newOptions);
+    if (ok) { showToast("✅ Choices saved!"); setEditingChoicesId(null); }
+    else showToast("❌ Couldn't save the choices", "error");
   }
 
   function startEditBadge(item) {
@@ -1832,6 +1883,32 @@ function AdminMenu() {
                   ) : (
                     <div style={{cursor:"pointer",fontSize:"0.8rem",margin:"0.2rem 0",color:"rgba(255,255,255,0.6)"}} onClick={() => startEditBadge(item)} title="Tap to edit the yellow tag">
                       🏷️ {item.badge ? <>Tag: <strong style={{color:"var(--yellow)"}}>{item.badge}</strong></> : "No tag"} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️ {item.badge ? "edit" : "add"}</span>
+                    </div>
+                  )}
+                  {editingChoicesId === item.id ? (
+                    <div style={{margin:"0.4rem 0"}}>
+                      {choicesDraft.map((d, idx) => (
+                        <div key={d.key} style={{marginBottom:"0.6rem"}}>
+                          <div style={{fontSize:"0.78rem",color:"var(--yellow)",fontWeight:700,marginBottom:"0.2rem"}}>{d.label}</div>
+                          <textarea
+                            className="form-input"
+                            rows={Math.max(4, d.text.split("\n").length + 1)}
+                            style={{width:"100%",padding:"0.4rem 0.5rem"}}
+                            placeholder="One choice per line"
+                            value={d.text}
+                            onChange={e => setChoicesDraft(ds => ds.map((x, i) => i === idx ? {...x, text:e.target.value} : x))}
+                          />
+                        </div>
+                      ))}
+                      <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.45)",marginBottom:"0.4rem"}}>One choice per line. To charge extra for a choice, put (+£1.50) at the end of it.</div>
+                      <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap"}}>
+                        <button className="add-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => saveChoices(item)}>Save choices</button>
+                        <button className="delete-item-btn" style={{padding:"0.3rem 0.7rem",fontSize:"0.85rem"}} onClick={() => setEditingChoicesId(null)}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{cursor:"pointer",fontSize:"0.8rem",margin:"0.2rem 0",color:"rgba(255,255,255,0.6)"}} onClick={() => startEditChoices(item)} title="Tap to edit the flavour / topping choices">
+                      🍬 {(() => { const n = choiceLists(parseOptions(item.options)).reduce((t, l) => t + l.choices.length, 0); return n ? <>Choices: <strong style={{color:"var(--yellow)"}}>{n}</strong></> : "No choices"; })()} <span style={{fontSize:"0.75rem",opacity:0.7}}>✏️ {choiceLists(parseOptions(item.options)).length ? "edit" : "add"}</span>
                     </div>
                   )}
                   <div className="admin-card-actions">
